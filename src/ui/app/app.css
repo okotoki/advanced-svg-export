@@ -1,33 +1,36 @@
-.container {
-  width: 100%;
-  height: 100%;
-  padding: 20px;
-  font-family: Roboto, sans-serif;
+@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
+@import url('https://rsms.me/inter/inter.css');
+
+* {
+  box-sizing: border-box;
 }
 
-.container h1 {
+body {
+  background: white;
   margin: 0;
-  color: #3a3a3a;
-  font-size: 24px;
-  position: relative;
+  padding: 0;
+  font-family: Inter, Roboto, sans-serif;
 }
 
-.total {
-  color: #793EF8;
-  position: absolute;
-  bottom: 0;
-  right: 0;
-}
-
-.items {
-  color: #3a3a3a
-}
-
-.items div {
-  padding: 4px 0;
-  padding-right: 44px
-}
-
-.items b{
+.headerButton {
   float: right;
+  margin-top: 3px;
+}
+
+.files {
+  margin: 0 14px;
+}
+
+.noLayersSelected {
+  font-size: 20px;
+  color: #969696;
+  display: flex;
+  flex-grow: 1;
+  padding-bottom: 30px;
+  justify-content: center;
+  align-items: center;
+}
+
+.buttonWrap {
+  margin: 10px 0;
 }

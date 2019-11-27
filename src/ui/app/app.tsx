@@ -1,74 +1,131 @@
 import * as React from 'react'
+import { subscribe } from 'shared/messenger'
 import { IExportSVG } from 'shared/types'
 
 import * as styles from './app.css'
+import { Button, TextButton } from './components/button'
+import { Layout } from './components/layout'
+import { File } from './file'
+import { Settings } from './settings'
+import { defaultPluginsSettings } from './svgo/plugins'
 import SVGOWorker from './svgo/svgo.worker'
-
-const decode = (arr: Uint8Array): string => new TextDecoder('utf-8').decode(arr)
+import { cls, saveAsZip, uIntToString } from './util'
 
 const svgoWorker = new SVGOWorker(undefined as any)
 
-interface Result {
-  original: string
-  optimized: string
+interface ISVG {
+  id: string
+  name: string
+  svgOriginal: string
 }
 
+export interface ISVGProgress extends ISVG {
+  isDone: false
+}
+
+export interface ISVGOptimized extends ISVG {
+  isDone: true
+  svgOptimized: string
+  width: number
+  height: number
+}
+
+interface IState {
+  svgs: (ISVGProgress | ISVGOptimized)[]
+}
+
+const initialState = {
+  svgs: []
+}
+
+const convert = (svgs: IExportSVG[]): ISVGProgress[] =>
+  svgs.map(el => ({
+    id: el.id,
+    name: el.name,
+    svgOriginal: uIntToString(el.svg),
+    isDone: false
+  }))
+
+interface IHeaderProps {
+  onSettingsClick(): void
+}
+
+const Header: React.FC<IHeaderProps> = ({ onSettingsClick }) => (
+  <div>
+    Optimized SVG Export{' '}
+    <TextButton className={styles.headerButton} onClick={onSettingsClick}>
+      settings
+    </TextButton>
+  </div>
+)
+
 export const App = () => {
-  const [r, setResult] = React.useState<Result>()
-  const [name, setName] = React.useState<string>()
+  const [state, setState] = React.useState<IState>(initialState)
+  const [showSettings, setShowSettings] = React.useState(false)
 
-  onmessage = event => {
-    const data = event.data.pluginMessage as IExportSVG
-    const svg = decode(data.svg)
-    setName(data.name)
+  React.useEffect(() => {
+    const unsubscribe = subscribe({
+      selectionChanged: els => {
+        const svgs = convert(els)
+        setState(_ => ({ svgs }))
+        ;[...svgs]
+          .sort((a, b) => a.svgOriginal.length - b.svgOriginal.length)
+          .map(svg => svgoWorker.postMessage(svg))
+      }
+    })
 
-    svgoWorker.postMessage(svg)
-    svgoWorker.onmessage = x => {
-      const optimizedSvg = x.data
+    svgoWorker.onmessage = ({ data }: { data: ISVGOptimized }) => {
+      console.log('Received Optimized SVG', data)
 
-      setResult({
-        original: svg,
-        optimized: optimizedSvg
-      })
+      setState(state => ({
+        svgs: state.svgs.map(svg => (svg.id === data.id ? data : svg))
+      }))
+    }
 
+    return () => {
+      unsubscribe()
       svgoWorker.onmessage = null
     }
-    console.log(svg)
-    // console.log(optimize(svg))
-    // const selectedElement =
-    //   typeof data !== 'undefined' ? (JSON.parse(data) as Rect[]) : undefined
-    // console.log('Selected Elements', selectedElement)
-    // if (!!selectedElement) {
-    //   setRects(selectedElement)
-    // }
-  }
+  }, [])
 
-  const getUrl = (x: string) => (
-    <a href={URL.createObjectURL(new Blob([x]))} download={name + '.svg'}>
-      Download
-    </a>
-  )
+  const l = state.svgs.length
+
+  const closeSettings = () => setShowSettings(false)
+  const openSettings = () => setShowSettings(true)
 
   return (
-    <div className={styles.container}>
-      {!!r ? (
-        <>
-          <div>
-            Original: <div dangerouslySetInnerHTML={{ __html: r.original }} />
+    <>
+      <Layout header={<Header onSettingsClick={openSettings} />}>
+        {l ? (
+          <div {...cls(styles.files)}>
+            {state.svgs.map(svg => (
+              <File el={svg} key={svg.id} />
+            ))}
+            <div {...cls(styles.buttonWrap)}>
+              {l > 1 ? (
+                <Button
+                  onClick={() => saveAsZip(state.svgs as ISVGOptimized[])}
+                  disabled={!!state.svgs.find(x => !x.isDone)}
+                >
+                  Export {l} layers
+                </Button>
+              ) : null}
+            </div>
           </div>
-          <div>
-            Optimized: <div dangerouslySetInnerHTML={{ __html: r.optimized }} />
+        ) : (
+          <div className={styles.noLayersSelected}>
+            Select at least one layer for export
           </div>
-          <div>
-            Compressed to{' '}
-            {Math.round((r.optimized.length / r.original.length) * 1000) / 10}%
-            of original size{' '}
-          </div>
-          <div>{getUrl(r.optimized)}</div>
-        </>
-      ) : (
-        <h1>Select element you'd like to export</h1>
-      )}
-    </div>
+        )}
+      </Layout>
+
+      {showSettings ? (
+        <Settings
+          onCloseClick={closeSettings}
+          onSaveClick={closeSettings}
+          settings={defaultPluginsSettings}
+        />
+      ) : null}
+    </>
   )
 }

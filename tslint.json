@@ -8,6 +8,7 @@
     "object-literal-sort-keys": false,
     "array-type": false,
     "no-shadowed-variable": false,
-    "no-console": false
+    "no-console": false,
+    "max-classes-per-file": false
   }
 }
