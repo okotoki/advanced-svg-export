@@ -1,16 +1,26 @@
 import { optimize } from '.'
+import { ISVGOptimized, ISVGProgress } from '../app'
 
 const ctx: Worker = self as any
 
 ctx.addEventListener('message', event => {
-  const svg = event.data
+  const svg = event.data as ISVGProgress
 
   console.log('Worker received message')
-  console.time('optimizing')
+  const lbl = 'optimizing ' + svg.id
+  console.time(lbl)
 
-  optimize(svg, { multipass: true }).then(x => {
-    console.timeEnd('optimizing')
-    ctx.postMessage(x.data)
+  optimize(svg.svgOriginal, { multipass: true }).then(x => {
+    console.timeEnd(lbl)
+
+    const res: ISVGOptimized = {
+      ...svg,
+      isDone: true,
+      svgOptimized: x.data,
+      width: x.info.width,
+      height: x.info.height
+    }
+    ctx.postMessage(res)
   })
 })
 

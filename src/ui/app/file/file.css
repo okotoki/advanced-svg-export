@@ -1,0 +1,31 @@
+.file {
+  display: flex;
+  padding: 4px 0;
+  font-size: 12px;
+  align-items: center;
+  color: #080808;
+  min-height: 32px;
+}
+
+.name {
+  line-height: 22px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.size {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.savings {
+  margin: 0 16px;
+  color: #3cd23c;
+  width: 30px;
+  text-align: right;
+}
+
+.progress {
+  margin-left: auto;
+}

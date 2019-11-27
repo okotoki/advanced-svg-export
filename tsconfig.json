@@ -14,5 +14,9 @@
     "skipLibCheck": true,
     "baseUrl": "./src"
   },
+  "include": [
+      "src",
+      "custom_typings"
+  ],
   "exclude": ["dist", "node_modules"]
 }

@@ -1,11 +1,14 @@
+import { createMainMessenger } from 'shared/messenger'
 import { IExportSVG } from 'shared/types'
 
 // This shows the HTML page in "ui.html".
 figma.showUI(__html__, {
   width: 400,
-  height: 300,
-  position: 'last'
+  height: 300 // ,
+  // position: 'last'
 })
+
+const messenger = createMainMessenger()
 
 const serialize = async (node: SceneNode): Promise<IExportSVG> => {
   const svg = await node.exportAsync({ format: 'SVG' })
@@ -18,11 +21,9 @@ const serialize = async (node: SceneNode): Promise<IExportSVG> => {
 }
 
 const sendSerializedSelection = async (selection: readonly SceneNode[]) => {
-  console.log(selection)
-  const el = await serialize(selection[0])
-  console.log('Serialized element: ', el)
-
-  figma.ui.postMessage(el)
+  const els = await Promise.all(selection.map(serialize))
+  console.log('Serialized element: ', els)
+  messenger.selectionChanged(els.filter(x => !!x.svg.length))
 }
 
 sendSerializedSelection(figma.currentPage.selection)

@@ -1,0 +1,53 @@
+.layout {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  padding: 10px 0 15px 0;
+}
+
+.wrapper {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  margin: 0 14px 10px 14px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.content {
+  overflow-y: scroll;
+  flex: 1;
+  position: relative;
+}
+
+.content::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  display: block;
+  height: 1px;
+  width: 100%;
+  background: #fff
+}
+
+.content::before {
+  content: '';
+  position: sticky;
+  top: 0;
+  display: block;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.dark .content::after {
+  background: #232323;
+}
+
+.dark .content::before {
+  background: rgba(255,255,255, 0.55)
+}
+

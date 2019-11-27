@@ -1,7 +1,8 @@
 declare const styles: {
-  readonly "container": string;
-  readonly "total": string;
-  readonly "items": string;
+  readonly "headerButton": string;
+  readonly "files": string;
+  readonly "noLayersSelected": string;
+  readonly "buttonWrap": string;
 };
 export = styles;
 

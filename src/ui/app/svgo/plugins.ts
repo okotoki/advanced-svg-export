@@ -98,7 +98,11 @@ export const pluginsData = {
 
 export type PluginsData = typeof pluginsData
 
-export const defaultPluginsSettings: { [k in keyof PluginsData]: boolean } = {
+export type PluginsSettings = {
+  [k in keyof PluginsData]: boolean
+}
+
+export const defaultPluginsSettings: PluginsSettings = {
   removeDoctype: true,
   removeXMLProcInst: true,
   removeComments: true,
