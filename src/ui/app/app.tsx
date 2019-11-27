@@ -1,15 +1,16 @@
 import * as React from 'react'
 import { subscribe } from 'shared/messenger'
+import { defaultPluginsSettings } from 'shared/settings'
 import { IExportSVG } from 'shared/types'
 
 import * as styles from './app.css'
-import { Button, TextButton } from './components/button'
+import { TextButton } from './components/button'
 import { Layout } from './components/layout'
+import { Loader } from './components/loader'
 import { File } from './file'
 import { Settings } from './settings'
-import { defaultPluginsSettings } from './svgo/plugins'
 import SVGOWorker from './svgo/svgo.worker'
-import { cls, saveAsZip, uIntToString } from './util'
+import { cls, getSize, saveAsZip, uIntToString } from './util'
 
 const svgoWorker = new SVGOWorker(undefined as any)
 
@@ -46,14 +47,32 @@ const convert = (svgs: IExportSVG[]): ISVGProgress[] =>
     isDone: false
   }))
 
+const totalSizeGreaterThan = (
+  els: (ISVGProgress | ISVGOptimized)[],
+  size: number
+) =>
+  !els.reduce((acc, el) => (acc <= 0 ? 0 : acc - getSize(el.svgOriginal)), size)
+
 interface IHeaderProps {
+  count: number
+  showExportButton: boolean
   onSettingsClick(): void
+  onExportClick(): void
 }
 
-const Header: React.FC<IHeaderProps> = ({ onSettingsClick }) => (
+const Header: React.FC<IHeaderProps> = ({
+  onSettingsClick,
+  count,
+  onExportClick,
+  showExportButton
+}) => (
   <div>
-    Optimized SVG Export{' '}
-    <TextButton className={styles.headerButton} onClick={onSettingsClick}>
+    {showExportButton ? (
+      <TextButton {...cls(styles.exportButton)} onClick={onExportClick}>
+        export {count} layers
+      </TextButton>
+    ) : null}
+    <TextButton className={styles.settingsButton} onClick={onSettingsClick}>
       settings
     </TextButton>
   </div>
@@ -93,31 +112,36 @@ export const App = () => {
   const closeSettings = () => setShowSettings(false)
   const openSettings = () => setShowSettings(true)
 
+  const optimizingFinished = !state.svgs.find(x => !x.isDone)
+
   return (
     <>
-      <Layout header={<Header onSettingsClick={openSettings} />}>
-        {l ? (
+      {l ? (
+        <Layout
+          header={
+            <Header
+              showExportButton={optimizingFinished && l > 1}
+              count={l}
+              onExportClick={() => saveAsZip(state.svgs as ISVGOptimized[])}
+              onSettingsClick={openSettings}
+            />
+          }
+        >
           <div {...cls(styles.files)}>
-            {state.svgs.map(svg => (
-              <File el={svg} key={svg.id} />
-            ))}
-            <div {...cls(styles.buttonWrap)}>
-              {l > 1 ? (
-                <Button
-                  onClick={() => saveAsZip(state.svgs as ISVGOptimized[])}
-                  disabled={!!state.svgs.find(x => !x.isDone)}
-                >
-                  Export {l} layers
-                </Button>
-              ) : null}
-            </div>
+            {!optimizingFinished && totalSizeGreaterThan(state.svgs, 100000) ? (
+              <div {...cls(styles.loader)}>
+                <Loader />
+              </div>
+            ) : (
+              state.svgs.map(svg => <File el={svg} key={svg.id} />)
+            )}
           </div>
-        ) : (
-          <div className={styles.noLayersSelected}>
-            Select at least one layer for export
-          </div>
-        )}
-      </Layout>
+        </Layout>
+      ) : (
+        <div className={styles.noLayersSelected}>
+          Select at least one layer for export
+        </div>
+      )}
 
       {showSettings ? (
         <Settings

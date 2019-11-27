@@ -1,3 +1,4 @@
+import { PluginsSettings } from 'shared/settings'
 import cleanupAttrs from 'svgo/plugins/cleanupAttrs'
 import cleanupEnableBackground from 'svgo/plugins/cleanupEnableBackground'
 import cleanupIDs from 'svgo/plugins/cleanupIDs'
@@ -96,65 +97,6 @@ export const pluginsData = {
   // addAttributesToSVGElement,
 }
 
-export type PluginsData = typeof pluginsData
-
-export type PluginsSettings = {
-  [k in keyof PluginsData]: boolean
-}
-
-export const defaultPluginsSettings: PluginsSettings = {
-  removeDoctype: true,
-  removeXMLProcInst: true,
-  removeComments: true,
-  removeMetadata: true,
-  removeXMLNS: true,
-  removeEditorsNSData: true,
-  cleanupAttrs: true,
-  inlineStyles: true,
-  minifyStyles: true,
-  convertStyleToAttrs: true,
-  cleanupIDs: true,
-  // prefixIds: true,
-  removeRasterImages: true,
-  removeUselessDefs: true,
-  cleanupNumericValues: true,
-  cleanupListOfValues: true,
-  convertColors: true,
-  removeUnknownsAndDefaults: true,
-  removeNonInheritableGroupAttrs: true,
-  removeUselessStrokeAndFill: true,
-  removeViewBox: true,
-  cleanupEnableBackground: true,
-  removeHiddenElems: true,
-  removeEmptyText: true,
-  convertShapeToPath: true,
-  moveElemsAttrsToGroup: true,
-  moveGroupAttrsToElems: true,
-  collapseGroups: true,
-  convertPathData: true,
-  convertTransform: true,
-  convertEllipseToCircle: true,
-  removeEmptyAttrs: true,
-  removeEmptyContainers: true,
-  mergePaths: true,
-  removeUnusedNS: true,
-  // This currently throws an error
-  // removeOffCanvasPaths: true,
-  reusePaths: true,
-  sortAttrs: true,
-  sortDefsChildren: true,
-  removeTitle: true,
-  removeDesc: true,
-  removeDimensions: true,
-  // removeAttrs: true,
-  // removeElementsByAttr: true,
-  // removeAttributesBySelector: true,
-  // addClassesToSVGElement: true,
-  removeStyleElement: true,
-  removeScriptElement: true
-  // addAttributesToSVGElement,
-}
-
 // Arrange plugins by type - this is what plugins() expects
 function arrangePluginsByType(plugins: SVGO.Plugin[]) {
   return plugins
@@ -173,102 +115,176 @@ function arrangePluginsByType(plugins: SVGO.Plugin[]) {
 
 export const pluginsByType = arrangePluginsByType(Object.values(pluginsData))
 
-// interface ISettings {
-//   plugins: { [k in keyof PluginData]: any }
-// }
-
-// function multipassCompress(settings: ISettings) {
-//   // activate/deactivate plugins
-//   Object.keys(settings.plugins).forEach(pluginName => {
-//     pluginsData[pluginName].active = settings.plugins[pluginName]
-//   })
-
-//   // Set floatPrecision across all the plugins
-//   const floatPrecision = Number(settings.floatPrecision)
-
-//   for (const plugin of Object.values(pluginsData)) {
-//     if (plugin.params && 'floatPrecision' in plugin.params) {
-//       if (plugin === pluginsData.cleanupNumericValues && floatPrecision === 0) {
-//         // 0 almost always breaks images when used on this plugin.
-//         // Better to allow 0 for everything else, but switch to 1 for this plugin.
-//         plugin.params.floatPrecision = 1
-//       } else {
-//         plugin.params.floatPrecision = floatPrecision
-//       }
-//     }
-//   }
-
-//   const svg = cloneParsedSvg(parsedSvg)
-//   let svgData
-//   let previousDataLength
-
-//   while (svgData === undefined || svgData.length != previousDataLength) {
-//     previousDataLength = svgData && svgData.length
-//     plugins(svg, { input: 'string' }, optimisedPluginsData)
-//     svgData = js2svg(svg, {
-//       indent: '  ',
-//       pretty: settings.pretty
-//     }).data
-
-//     yield {
-//       data: svgData,
-//       dimensions: getDimensions(svg)
-//     }
-//   }
-// }
-
-// interface IConfig {
-
-// }
-
-// function optimizeOnce(svgstr: string, config: IConfig , callback: () => void) {
-
-//   SVG2JS(svgstr, function(svgjs) {
-//       if (svgjs.error) {
-//           callback(svgjs);
-//           return;
-//       }
-
-//       svgjs = PLUGINS(svgjs, info, config.plugins);
-
-//       callback(JS2SVG(svgjs, config.js2svg));
-//   });
-// };
-
-// export function optimize(svgstr: string, ) {
-//   function(svgstr, info) {
-//     info = info || {};
-//     return new Promise((resolve, reject) => {
-//         if (this.config.error) {
-//             reject(this.config.error);
-//             return;
-//         }
-
-//         var config = this.config,
-//             maxPassCount = config.multipass ? 10 : 1,
-//             counter = 0,
-//             prevResultSize = Number.POSITIVE_INFINITY,
-//             optimizeOnceCallback = (svgjs) => {
-//                 if (svgjs.error) {
-//                     reject(svgjs.error);
-//                     return;
-//                 }
-
-//                 info.multipassCount = counter;
-//                 if (++counter < maxPassCount && svgjs.data.length < prevResultSize) {
-//                     prevResultSize = svgjs.data.length;
-//                     this._optimizeOnce(svgjs.data, info, optimizeOnceCallback);
-//                 } else {
-//                     if (config.datauri) {
-//                         svgjs.data = encodeSVGDatauri(svgjs.data, config.datauri);
-//                     }
-//                     if (info && info.path) {
-//                         svgjs.path = info.path;
-//                     }
-//                     resolve(svgjs);
-//                 }
-//             };
-
-//         this._optimizeOnce(svgstr, info, optimizeOnceCallback);
-//     });
-// }
+export const pluginsWithDescription: {
+  id: keyof PluginsSettings
+  name: string
+}[] = [
+  {
+    id: 'cleanupAttrs',
+    name: 'Cleanup attributes whitespace'
+  },
+  {
+    id: 'inlineStyles',
+    name: 'Inline styles'
+  },
+  {
+    id: 'removeDoctype',
+    name: 'Remove doctype'
+  },
+  {
+    id: 'removeXMLProcInst',
+    name: 'Remove XML instructions'
+  },
+  {
+    id: 'removeComments',
+    name: 'Remove comments'
+  },
+  {
+    id: 'removeMetadata',
+    name: 'Remove <metadata>'
+  },
+  {
+    id: 'removeTitle',
+    name: 'Remove <title>'
+  },
+  {
+    id: 'removeDesc',
+    name: 'Remove <desc>'
+  },
+  {
+    id: 'removeUselessDefs',
+    name: 'Remove unused defs'
+  },
+  {
+    id: 'removeXMLNS',
+    name: 'Remove xmlns'
+  },
+  {
+    id: 'removeEditorsNSData',
+    name: 'Remove editor data'
+  },
+  {
+    id: 'removeEmptyAttrs',
+    name: 'Remove empty attrs'
+  },
+  {
+    id: 'removeHiddenElems',
+    name: 'Remove hidden elements'
+  },
+  {
+    id: 'removeEmptyText',
+    name: 'Remove empty text'
+  },
+  {
+    id: 'removeEmptyContainers',
+    name: 'Remove empty containers'
+  },
+  {
+    id: 'removeViewBox',
+    name: 'Remove viewBox'
+  },
+  {
+    id: 'minifyStyles',
+    name: 'Minify styles'
+  },
+  {
+    id: 'cleanupEnableBackground',
+    name: 'Remove/tidy enable-background'
+  },
+  {
+    id: 'convertStyleToAttrs',
+    name: 'Style to attributes'
+  },
+  {
+    id: 'convertColors',
+    name: 'Minify colors'
+  },
+  {
+    id: 'convertPathData',
+    name: 'Round/rewrite paths'
+  },
+  {
+    id: 'convertTransform',
+    name: 'Round/rewrite transforms'
+  },
+  {
+    id: 'removeUnknownsAndDefaults',
+    name: 'Remove unknowns & defaults'
+  },
+  {
+    id: 'removeNonInheritableGroupAttrs',
+    name: 'Remove unneeded group attrs'
+  },
+  {
+    id: 'removeUselessStrokeAndFill',
+    name: 'Remove useless stroke & fill'
+  },
+  {
+    id: 'removeUnusedNS',
+    name: 'Remove unused namespaces'
+  },
+  {
+    id: 'cleanupIDs',
+    name: 'Clean IDs'
+  },
+  {
+    id: 'cleanupNumericValues',
+    name: 'Round/rewrite numbers'
+  },
+  {
+    id: 'cleanupListOfValues',
+    name: 'Round/rewrite list of numbers'
+  },
+  {
+    id: 'moveElemsAttrsToGroup',
+    name: 'Move attrs to parent group'
+  },
+  {
+    id: 'moveGroupAttrsToElems',
+    name: 'Move group attrs to elements'
+  },
+  {
+    id: 'collapseGroups',
+    name: 'Collapse useless groups'
+  },
+  {
+    id: 'removeRasterImages',
+    name: 'Remove raster images'
+  },
+  {
+    id: 'mergePaths',
+    name: 'Merge paths'
+  },
+  {
+    id: 'convertShapeToPath',
+    name: 'Shapes to (smaller) paths'
+  },
+  {
+    id: 'convertEllipseToCircle',
+    name: 'Convert non-eccentric <ellipse> to <circle>'
+  },
+  {
+    id: 'sortAttrs',
+    name: 'Sort attrs'
+  },
+  {
+    id: 'sortDefsChildren',
+    name: 'Sort children of <defs>'
+  },
+  {
+    id: 'removeDimensions',
+    name: 'Prefer viewBox to width/height'
+  },
+  {
+    id: 'removeStyleElement',
+    name: 'Remove <style> elements'
+  },
+  {
+    id: 'removeScriptElement',
+    name: 'Remove <script> elements'
+  },
+  {
+    id: 'reusePaths',
+    name: 'Replace duplicate elements with links'
+  }
+]
