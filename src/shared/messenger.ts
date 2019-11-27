@@ -1,3 +1,4 @@
+import { PluginsSettings } from './settings'
 import { IExportSVG } from './types'
 
 function send<T>(type: keyof Handlers, data: T) {
@@ -9,7 +10,8 @@ function send<T>(type: keyof Handlers, data: T) {
 
 export function createMainMessenger() {
   return {
-    selectionChanged: (els: IExportSVG[]) => send('selectionChanged', els)
+    selectionChanged: (els: IExportSVG[]) => send('selectionChanged', els),
+    initialized: (settings: PluginsSettings) => send('initialized', settings)
   }
 }
 

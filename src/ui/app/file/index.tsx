@@ -2,7 +2,6 @@ import * as React from 'react'
 
 import { ISVGOptimized, ISVGProgress } from '../app'
 import { LinkButton } from '../components/button'
-import { Loader } from '../components/loader'
 import { f2, formatSize, getSize, svgToUrl } from '../util'
 import * as styles from './file.css'
 
@@ -22,7 +21,6 @@ const FileStats = ({ x }: { x: ISVGOptimized }) => {
 
 export const File = ({ el }: { el: ISVGOptimized | ISVGProgress }) => {
   console.log('File Render', el)
-  const size = getSize(el.svgOriginal)
   return (
     <div className={styles.file}>
       <div className={styles.name}>{el.name}</div>
@@ -39,8 +37,6 @@ export const File = ({ el }: { el: ISVGOptimized | ISVGProgress }) => {
             </LinkButton>
           </div>
         </>
-      ) : size > 50000 ? (
-        <Loader className={styles.progress} />
       ) : null}
     </div>
   )

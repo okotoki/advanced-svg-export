@@ -12,9 +12,14 @@ body {
   font-family: Inter, Roboto, sans-serif;
 }
 
-.headerButton {
+.settingsButton {
   float: right;
-  margin-top: 3px;
+  margin-top: 4px;
+}
+
+.exportButton {
+  float: left;
+  margin-top: 4px;
 }
 
 .files {
@@ -22,15 +27,25 @@ body {
 }
 
 .noLayersSelected {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  margin-top: -15px;
+
   font-size: 20px;
   color: #969696;
-  display: flex;
-  flex-grow: 1;
-  padding-bottom: 30px;
-  justify-content: center;
-  align-items: center;
+  text-align: center;
 }
 
 .buttonWrap {
   margin: 10px 0;
+}
+
+.loader {
+  text-align: center;
+  font-size: 32px;
+  font-family: monospace;
+  line-height: 50px;
+  padding-top: 60px;
 }

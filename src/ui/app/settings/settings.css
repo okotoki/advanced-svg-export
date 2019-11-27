@@ -32,7 +32,7 @@
   width: 50%;
   float: left;
   display: flex;
-  padding: 5px 5px 5px 0;
+  padding: 12px 5px 0 0;
 }
 
 .item input {
@@ -43,6 +43,10 @@
 .label {
   line-height: 16px;
   user-select: none;
+}
+
+.label > span {
+  color: #9a9a9a
 }
 
 .buttons {

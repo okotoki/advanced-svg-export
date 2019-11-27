@@ -29,7 +29,7 @@ export const Loader = ({ className }: { className?: string }) => {
       })
 
       if (i === totalIterations - 1) {
-        const to = setTimeout(run, 1000)
+        const to = setTimeout(run, 600)
         timeouts = [(to as any) as number]
       }
     }
