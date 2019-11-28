@@ -113,7 +113,15 @@ function arrangePluginsByType(plugins: SVGO.Plugin[]) {
     }, [] as SVGO.Plugin[][])
 }
 
-export const pluginsByType = arrangePluginsByType(Object.values(pluginsData))
+export const pluginsByType = (settings: PluginsSettings) => {
+  const plugins = Object.assign({}, pluginsData)
+  Object.keys(settings).forEach(id => {
+    plugins[id as keyof PluginsSettings].active =
+      settings[id as keyof PluginsSettings]
+  })
+
+  return arrangePluginsByType(Object.values(plugins))
+}
 
 export const pluginsWithDescription: {
   id: keyof PluginsSettings

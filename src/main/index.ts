@@ -1,6 +1,9 @@
-import { createMainMessenger } from 'shared/messenger'
-import { defaultPluginsSettings, PluginsSettings } from 'shared/settings'
+import { createMainMessenger, subscribeToUI } from 'shared/messenger'
+import { defaultPluginsSettings } from 'shared/settings'
 import { IExportSVG } from 'shared/types'
+
+import { get, set } from './store'
+import version from './version'
 
 // This shows the HTML page in "ui.html".
 figma.showUI(__html__, {
@@ -10,6 +13,12 @@ figma.showUI(__html__, {
 })
 
 const messenger = createMainMessenger()
+
+subscribeToUI({
+  settingsChanged(settings) {
+    set('settings', settings)
+  }
+})
 
 const serialize = async (node: SceneNode): Promise<IExportSVG> => {
   const svg = await node.exportAsync({ format: 'SVG' })
@@ -27,22 +36,46 @@ const sendSerializedSelection = async (selection: readonly SceneNode[]) => {
   messenger.selectionChanged(els.filter(x => !!x.svg.length))
 }
 
-figma.clientStorage.getAsync('settings').then(x => {
-  let settings: PluginsSettings
-  if (!x) {
-    settings = defaultPluginsSettings
-  } else {
-    try {
-      settings = JSON.parse(x)
-    } catch (e) {
-      settings = defaultPluginsSettings
+const sendInitialized = async () => {
+  let settings = defaultPluginsSettings
+  let totalSaved = 0
+
+  try {
+    const [s, t] = await Promise.all([get('settings'), get('totalSaved')])
+    if (typeof s === 'undefined') {
+      set('settings', settings)
+    } else {
+      settings = s
     }
+
+    if (typeof t === 'undefined') {
+      set('totalSaved', totalSaved)
+    } else {
+      totalSaved = t
+    }
+  } catch (e) {
+    console.error('[SVGO] Settings retrieving error', e)
+    set('settings', settings)
+    set('totalSaved', totalSaved)
   }
-  messenger.initialized(settings)
-})
 
-sendSerializedSelection(figma.currentPage.selection)
+  messenger.initialized({
+    settings,
+    totalSaved,
+    version
+  })
+}
 
-figma.on('selectionchange', () =>
-  sendSerializedSelection(figma.currentPage.selection)
-)
+function start() {
+  sendInitialized()
+
+  setTimeout(() => {
+    figma.on('selectionchange', () =>
+      sendSerializedSelection(figma.currentPage.selection)
+    )
+
+    sendSerializedSelection(figma.currentPage.selection)
+  }, 1000)
+}
+
+start()
