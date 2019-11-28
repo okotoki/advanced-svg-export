@@ -31,8 +31,10 @@ const Header: React.FC<IHeaderProps> = ({ onCloseClick, onSaveClick }) => (
   </div>
 )
 
-interface ISettingsProps extends IHeaderProps {
+interface ISettingsProps {
   settings: PluginsSettings
+  onSaveClick(settings: PluginsSettings): void
+  onCloseClick(): void
 }
 
 export const Settings = ({
@@ -40,21 +42,40 @@ export const Settings = ({
   onCloseClick,
   onSaveClick
 }: ISettingsProps) => {
+  const ref = React.useRef<HTMLDivElement>(null)
+
   const initialState = pluginsWithDescription.map(x => ({
     id: x.id,
     name: x.name,
     active: settings[x.id]
   }))
 
+  const onSave = () => {
+    const el = ref.current
+    if (!el) {
+      return
+    }
+
+    const newSettings = Object.keys(settings).reduce<PluginsSettings>(
+      (acc, id) => {
+        acc[id as keyof PluginsSettings] = el.querySelector<HTMLInputElement>(
+          '#' + id
+        )!.checked
+        return acc
+      },
+      {} as PluginsSettings
+    )
+
+    onSaveClick(newSettings)
+  }
+
   return (
     <div {...cls(styles.container)}>
       <Layout
         theme="dark"
-        header={
-          <Header onSaveClick={onSaveClick} onCloseClick={onCloseClick} />
-        }
+        header={<Header onSaveClick={onSave} onCloseClick={onCloseClick} />}
       >
-        <div {...cls(styles.items)}>
+        <div {...cls(styles.items)} ref={ref}>
           {initialState.map(x => (
             <div {...cls(styles.item)} key={x.id}>
               <label htmlFor={x.id}>
@@ -70,33 +91,5 @@ export const Settings = ({
         </div>
       </Layout>
     </div>
-
-    // <div {...cls(styles.container)}>
-    //   <div {...cls(styles.wrap)}>
-    //     <div {...cls(styles.wrap2)}>
-    //       <div {...cls(styles.header)}>
-    //         Settings
-    //         <div {...cls(styles.buttons)}>
-    //           <div {...cls(styles.button)} onClick={onSaveClick}>
-    //             save
-    //           </div>
-    //           <div {...cls(styles.button, styles.close)} onClick={onCloseClick}>
-    //             close
-    //           </div>
-    //         </div>
-    //       </div>
-    //       <div {...cls(styles.items)}>
-    //         {initialState.map(x => (
-    //           <div key={x.id}>
-    //             <label htmlFor={x.id}>
-    //               <input id={x.id} type="checkbox" defaultChecked={x.active} />
-    //             </label>
-    //             <label htmlFor={x.id}>{x.name}</label>
-    //           </div>
-    //         ))}
-    //       </div>
-    //     </div>
-    //   </div>
-    // </div>
   )
 }
