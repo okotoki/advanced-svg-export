@@ -1,4 +1,5 @@
 import { createMainMessenger } from 'shared/messenger'
+import { defaultPluginsSettings, PluginsSettings } from 'shared/settings'
 import { IExportSVG } from 'shared/types'
 
 // This shows the HTML page in "ui.html".
@@ -25,6 +26,20 @@ const sendSerializedSelection = async (selection: readonly SceneNode[]) => {
   console.log('Serialized element: ', els)
   messenger.selectionChanged(els.filter(x => !!x.svg.length))
 }
+
+figma.clientStorage.getAsync('settings').then(x => {
+  let settings: PluginsSettings
+  if (!x) {
+    settings = defaultPluginsSettings
+  } else {
+    try {
+      settings = JSON.parse(x)
+    } catch (e) {
+      settings = defaultPluginsSettings
+    }
+  }
+  messenger.initialized(settings)
+})
 
 sendSerializedSelection(figma.currentPage.selection)
 
