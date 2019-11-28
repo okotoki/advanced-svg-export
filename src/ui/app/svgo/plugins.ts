@@ -260,10 +260,6 @@ export const pluginsWithDescription: {
     name: 'Shapes to (smaller) paths'
   },
   {
-    id: 'convertEllipseToCircle',
-    name: 'Convert non-eccentric <ellipse> to <circle>'
-  },
-  {
     id: 'sortAttrs',
     name: 'Sort attrs'
   },
@@ -282,6 +278,10 @@ export const pluginsWithDescription: {
   {
     id: 'removeScriptElement',
     name: 'Remove <script> elements'
+  },
+  {
+    id: 'convertEllipseToCircle',
+    name: 'Convert non-eccentric <ellipse> to <circle>'
   },
   {
     id: 'reusePaths',

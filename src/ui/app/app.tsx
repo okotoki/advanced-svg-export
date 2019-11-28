@@ -33,10 +33,12 @@ export interface ISVGOptimized extends ISVG {
 
 interface IState {
   svgs: (ISVGProgress | ISVGOptimized)[]
+  initialized: boolean
 }
 
-const initialState = {
-  svgs: []
+const initialState: IState = {
+  svgs: [],
+  initialized: false
 }
 
 const convert = (svgs: IExportSVG[]): ISVGProgress[] =>
@@ -84,9 +86,13 @@ export const App = () => {
 
   React.useEffect(() => {
     const unsubscribe = subscribe({
+      initialized: settings => {
+        console.log('>>>> Settings received', settings)
+        setState(x => Object.assign({}, x, { initialized: true }))
+      },
       selectionChanged: els => {
         const svgs = convert(els)
-        setState(_ => ({ svgs }))
+        setState(_ => ({ svgs, initialized: _.initialized }))
         ;[...svgs]
           .sort((a, b) => a.svgOriginal.length - b.svgOriginal.length)
           .map(svg => svgoWorker.postMessage(svg))
@@ -97,6 +103,7 @@ export const App = () => {
       console.log('Received Optimized SVG', data)
 
       setState(state => ({
+        initialized: state.initialized,
         svgs: state.svgs.map(svg => (svg.id === data.id ? data : svg))
       }))
     }
@@ -113,6 +120,10 @@ export const App = () => {
   const openSettings = () => setShowSettings(true)
 
   const optimizingFinished = !state.svgs.find(x => !x.isDone)
+
+  if (!state.initialized) {
+    return null
+  }
 
   return (
     <>
