@@ -1,14 +1,14 @@
 import * as React from 'react'
 
-import { ISVGOptimized, ISVGProgress } from '../app'
 import { LinkButton } from '../components/button'
+import { ISVGOptimized, ISVGProgress } from '../svgo/types'
 import { f2, formatSize, getSize, svgToUrl } from '../util'
 import * as styles from './file.css'
 
 const FileStats = ({ x }: { x: ISVGOptimized }) => {
   const sizeOriginal = getSize(x.svgOriginal)
   const sizeOptimized = getSize(x.svgOptimized)
-  const savings = f2(sizeOptimized / sizeOriginal) * 100
+  const savings = Math.round(f2(sizeOptimized / sizeOriginal) * 100)
   return (
     <>
       <div className={styles.size}>
@@ -19,8 +19,19 @@ const FileStats = ({ x }: { x: ISVGOptimized }) => {
   )
 }
 
-export const File = ({ el }: { el: ISVGOptimized | ISVGProgress }) => {
-  console.log('File Render', el)
+interface IFileProps {
+  el: ISVGOptimized | ISVGProgress
+  onExport(sizeDiff: number): void
+}
+export const File = ({ el, onExport }: IFileProps) => {
+  // console.log('File Render', el)
+  const onExportClick = () => {
+    if (!el.isDone) {
+      return
+    }
+    const sizeDiff = getSize(el.svgOriginal) - getSize(el.svgOptimized)
+    onExport(sizeDiff)
+  }
   return (
     <div className={styles.file}>
       <div className={styles.name}>{el.name}</div>
@@ -31,6 +42,7 @@ export const File = ({ el }: { el: ISVGOptimized | ISVGProgress }) => {
             <LinkButton
               size="small"
               href={svgToUrl(el.svgOptimized)}
+              onClick={onExportClick}
               download={el.name + '.svg'}
             >
               Export

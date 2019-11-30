@@ -1,67 +1,43 @@
 import * as React from 'react'
-import { createUIMessenger, subscribe } from 'shared/messenger'
+import { createMessenger } from 'shared/messengerX'
 import { PluginsSettings } from 'shared/settings'
-import { IExportSVG, IGlobalSettings } from 'shared/types'
 
-import * as styles from './app.css'
+import styles from './app.css'
 import { TextButton } from './components/button'
 import { Layout } from './components/layout'
 import { Loader } from './components/loader'
 import { File } from './file'
 import { Settings } from './settings'
+import { initialState, reducer } from './state'
+import { serializedToProgress } from './svgo'
 import SVGOWorker from './svgo/svgo.worker'
-import { cls, getSize, saveAsZip, uIntToString } from './util'
+import { ISVGOptimized, ISVGProgress } from './svgo/types'
+import { cls, getSize, saveAsZip } from './util'
 
-const messenger = createUIMessenger()
+const messenger = createMessenger('iframe')
 const svgoWorker = new SVGOWorker(undefined as any)
 
-interface ISVG {
-  id: string
-  name: string
-  svgOriginal: string
+const sendToWorker = (
+  svgs: ISVGProgress[] | undefined,
+  settings: PluginsSettings
+) => {
+  if (!svgs || !svgs.length) {
+    return
+  } else {
+    ;[...svgs]
+      .sort((a, b) => a.svgOriginal.length - b.svgOriginal.length)
+      .forEach(svg => svgoWorker.postMessage({ svg, settings }))
+  }
 }
-
-export interface ISVGProgress extends ISVG {
-  isDone: false
-}
-
-export interface ISVGOptimized extends ISVG {
-  isDone: true
-  svgOptimized: string
-  width: number
-  height: number
-}
-
-type IState = IStateInitial | IStateReady
-
-interface IStateInitial {
-  svgs: (ISVGProgress | ISVGOptimized)[]
-  initialized: false
-}
-
-interface IStateReady extends IGlobalSettings {
-  svgs: (ISVGProgress | ISVGOptimized)[]
-  initialized: true
-}
-
-const initialState: IState = {
-  svgs: [],
-  initialized: false
-}
-
-const convert = (svgs: IExportSVG[]): ISVGProgress[] =>
-  svgs.map(el => ({
-    id: el.id,
-    name: el.name,
-    svgOriginal: uIntToString(el.svg),
-    isDone: false
-  }))
 
 const totalSizeGreaterThan = (
   els: (ISVGProgress | ISVGOptimized)[],
   size: number
 ) =>
-  !els.reduce((acc, el) => (acc <= 0 ? 0 : acc - getSize(el.svgOriginal)), size)
+  !els.reduce((acc, el) => {
+    acc -= getSize(el.svgOriginal)
+    return acc <= 0 ? 0 : acc
+  }, size)
 
 interface IHeaderProps {
   count: number
@@ -88,59 +64,52 @@ const Header: React.FC<IHeaderProps> = ({
   </div>
 )
 
-const sendToWorker = (svgs: ISVGProgress[], settings: PluginsSettings) => {
-  ;[...svgs]
-    .sort((a, b) => a.svgOriginal.length - b.svgOriginal.length)
-    .forEach(svg => svgoWorker.postMessage({ svg, settings }))
-}
-
 export const App = () => {
-  const [state, setState] = React.useState<IState>(initialState)
+  const [state, dispatch] = React.useReducer(reducer, initialState)
   const [showSettings, setShowSettings] = React.useState(false)
+  console.log('AppX re-render')
 
   React.useEffect(() => {
-    const unsubscribe = subscribe({
-      initialized: globalSettings => {
-        console.log('>>>> Settings received', globalSettings)
-        setState(x =>
-          Object.assign({}, x, { initialized: true }, globalSettings)
-        )
+    console.log('Use Effect run')
+    messenger.subscribe({
+      initialized: msg => {
+        console.log('[SVGO] Initialized', msg)
+        const svgs = serializedToProgress(msg.svgs)
+        sendToWorker(svgs, msg.settings!)
+
+        dispatch({
+          type: 'INITIALIZE',
+          data: { ...msg, svgs, initialized: true }
+        })
       },
       selectionChanged: els => {
-        const svgs = convert(els)
-        let se: PluginsSettings
-        setState(state => {
-          se = (state as any).settings
-          console.log('here', state)
-          sendToWorker(svgs, se as any)
-          return Object.assign({}, state, {
-            svgs
-          })
-        })
+        const svgs = serializedToProgress(els)
+
+        sendToWorker(svgs, state.settings!)
+        dispatch({ type: 'SELECTION_CHANGED', data: svgs })
       }
     })
 
     svgoWorker.onmessage = ({ data }: { data: ISVGOptimized }) => {
-      console.log('Received Optimized SVG', data)
-
-      setState(state =>
-        Object.assign({}, state, {
-          svgs: state.svgs.map(svg => (svg.id === data.id ? data : svg))
-        })
-      )
+      // console.log('Received Optimized SVG', data)
+      dispatch({ type: 'OPTIMIZED_SVG', data })
     }
 
     return () => {
-      unsubscribe()
+      messenger.unsubscribe()
       svgoWorker.onmessage = null
     }
-  }, [])
+  }, [state.settings])
+
+  if (!state.initialized) {
+    return null
+  }
 
   const l = state.svgs.length
 
   const closeSettings = () => setShowSettings(false)
   const openSettings = () => setShowSettings(true)
-  const onSaveSettings = (settings: PluginsSettings) => {
+  const onSaveSettings = (settings: PluginsSettings, keepOpen?: boolean) => {
     const svgs = state.svgs
     const redoSvgs = svgs.map(
       x =>
@@ -151,17 +120,43 @@ export const App = () => {
           name: x.name
         } as ISVGProgress)
     )
+    dispatch({ type: 'SETTINGS_CHANGED', data: settings })
+    dispatch({ type: 'SELECTION_CHANGED', data: redoSvgs })
 
-    setState(x => Object.assign({}, x, { svgs, settings }))
-    messenger.settingsChanged(settings)
+    messenger.send.settingsChanged(settings)
     sendToWorker(redoSvgs, settings)
+
+    if (!keepOpen) {
+      closeSettings()
+    }
+  }
+
+  /*
+  Plugin uses <a href="https://github.com/svg/svgo/">SVGO</a> – modular SVG optimizer.<br />
+  Each option represents SVGO plugin (learn more) or restore default configuration.<br/>
+  <br/>
+  Configure plugins:
+  */
+
+  const incTotalValue = (sizeDiff: number) => {
+    messenger.send.totalSavedChanged(state.totalSaved + sizeDiff)
+    dispatch({ type: 'TOTAL_VALUE_INC', data: sizeDiff })
+  }
+
+  const onExportAll = () => {
+    const sizeDiff = state.svgs.reduce((acc, svg) => {
+      if (!svg.isDone) {
+        return acc
+      }
+
+      return acc + getSize(svg.svgOriginal) - getSize(svg.svgOptimized)
+    }, 0)
+
+    incTotalValue(sizeDiff)
+    saveAsZip(state.svgs as ISVGOptimized[])
   }
 
   const optimizingFinished = !state.svgs.find(x => !x.isDone)
-
-  if (!state.initialized) {
-    return null
-  }
 
   return (
     <>
@@ -171,7 +166,7 @@ export const App = () => {
             <Header
               showExportButton={optimizingFinished && l > 1}
               count={l}
-              onExportClick={() => saveAsZip(state.svgs as ISVGOptimized[])}
+              onExportClick={onExportAll}
               onSettingsClick={openSettings}
             />
           }
@@ -182,7 +177,9 @@ export const App = () => {
                 <Loader />
               </div>
             ) : (
-              state.svgs.map(svg => <File el={svg} key={svg.id} />)
+              state.svgs.map(svg => (
+                <File el={svg} key={svg.id} onExport={incTotalValue} />
+              ))
             )}
           </div>
         </Layout>
@@ -194,6 +191,7 @@ export const App = () => {
 
       {showSettings ? (
         <Settings
+          totalSaved={state.totalSaved}
           onCloseClick={closeSettings}
           onSaveClick={onSaveSettings}
           settings={state.settings}

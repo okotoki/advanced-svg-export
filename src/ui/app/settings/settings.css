@@ -9,6 +9,22 @@
   color: #fff;
 }
 
+.contentWrapper::after {
+  display: none;
+}
+
+.content {
+  font-size: 10px;
+  padding: 0 14px;
+  overflow-y: scroll;
+}
+
+.contentHeader {
+  font-size: 14px;
+  font-weight: 500;
+  padding: 14px 0 6px;
+}
+
 .learnMore {
   font-size: 12px;
   color: #c7c7c7;
@@ -21,12 +37,6 @@
   text-decoration: underline #18a0fb;
 }
 
-.items {
-  font-size: 10px;
-  padding: 0 10px;
-  overflow-y: scroll;
-}
-
 .item {
   line-height: 25px;
   width: 50%;
@@ -37,7 +47,8 @@
 
 .item input {
   margin-right: 6px;
-  margin-top: 2px;
+  margin-top: 3px;
+  margin-left: 0;
 }
 
 .label {
@@ -56,6 +67,10 @@
   margin-top: 3px;
 }
 
+.buttons.left {
+  float: left;
+}
+
 .close {
   margin-left: 15px;
   margin-right: 10px;
@@ -66,4 +81,72 @@
   content: '×';
   position: absolute;
   right: -12px;
+}
+
+
+@keyframes savedAnimate {
+  0% {
+    color: #c7c7c7;
+  }
+  50% {
+    color: #18a0fb;
+  }
+  100% {
+    color: #c7c7c7;
+  }
+}
+
+.animation {
+  animation: savedAnimate 0.8s ease-in-out 0.3s 1 forwards;
+}
+
+.saved {
+  color: #c7c7c7
+}
+
+
+.footer {
+    display: block;
+    width: 100%;
+    float: left;
+    font-size: 13px;
+    padding: 15px 0 5px 0;
+    line-height: 26px;
+    margin-top: 25px;
+    position: relative;
+    color: #bfbfbf;
+    text-align: center;
+}
+
+.footer::after {
+  content: "";
+  width: calc(100% + 28px);
+  height: 1px;
+  background: #b5b5b5;
+  display: block;
+  position: absolute;
+  top: 0;
+  left: -14px;
+}
+
+.footer a{
+  color: #c7c7c7;
+  text-decoration: underline dotted #c7c7c7;
+}
+
+.footer a:hover {
+  color:  #18a0fb;
+  text-decoration: underline #18a0fb;
+}
+
+.totalSaved {
+  color: #e2e2e2;
+  font-size: 16px;
+  line-height: 32px;
+}
+
+.totalSaved b {
+  font-size: 18px;
+  line-height: 26px;
+  color: #3fff36;
 }

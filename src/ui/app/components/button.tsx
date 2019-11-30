@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import { cls } from '../util'
+import { _f, cls } from '../util'
 import * as styles from './button.css'
 
 interface IBaseButtonProps {
@@ -31,6 +31,7 @@ export const Button: React.FC<IButtonProps> = ({
 interface ILinkButtonProps extends IBaseButtonProps {
   href: string
   download?: string
+  onClick?(): void
 }
 
 export const LinkButton: React.FC<ILinkButtonProps> = ({
@@ -38,20 +39,23 @@ export const LinkButton: React.FC<ILinkButtonProps> = ({
   disabled,
   size,
   href,
-  download
+  download,
+  onClick
 }) => {
   disabled = disabled || false
   const sizeClassName = styles[size || 'medium']
+  onClick = onClick || _f
 
   const c = cls(styles.button, disabled && styles.disabled, sizeClassName)
   return (
-    <a href={href} download={download || undefined} {...c}>
+    <a href={href} download={download || undefined} onClick={onClick} {...c}>
       {children}
     </a>
   )
 }
 
 interface ITextButtonProps {
+  disabled?: boolean
   className?: string
   onClick(): void
 }
@@ -59,9 +63,13 @@ interface ITextButtonProps {
 export const TextButton: React.FC<ITextButtonProps> = ({
   onClick,
   children,
+  disabled,
   className
 }) => (
-  <div {...cls(className, styles.textButton)} onClick={onClick}>
+  <div
+    {...cls(className, styles.textButton, disabled && styles.disabled)}
+    onClick={onClick}
+  >
     {children}
   </div>
 )

@@ -1,9 +1,12 @@
 import { PluginsSettings } from 'shared/settings'
+import { ISerializedSVG } from 'shared/types'
 import js2svg from 'svgo/lib/svgo/js2svg'
 import SVGOplugins from 'svgo/lib/svgo/plugins'
 import svg2js from 'svgo/lib/svgo/svg2js'
 
+import { uIntToString } from '../util'
 import { pluginsByType } from './plugins'
+import { ISVGProgress } from './types'
 
 const js2svgConfig = {
   indent: '  ',
@@ -27,7 +30,6 @@ export function optimizeOnce(
       return
     }
 
-    console.log('>>>', settings)
     svgjs = SVGOplugins(svgjs, { input: 'string' }, pluginsByType(settings))
 
     callback(js2svg(svgjs, js2svgConfig))
@@ -65,3 +67,11 @@ export function optimize(
     optimizeOnce(svgstr, settings, cb)
   })
 }
+
+export const serializedToProgress = (svgs: ISerializedSVG[]): ISVGProgress[] =>
+  svgs.map(el => ({
+    id: el.id,
+    name: el.name,
+    svgOriginal: uIntToString(el.svg),
+    isDone: false
+  }))

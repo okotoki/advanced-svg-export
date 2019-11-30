@@ -1,5 +1,5 @@
 import { PluginsSettings } from './settings'
-import { IExportSVG, IGlobalSettings } from './types'
+import { IGlobalSettings, ISerializedSVG } from './types'
 
 function sendToUI<T>(type: keyof Handlers, data: T) {
   figma.ui.postMessage({
@@ -21,7 +21,8 @@ export function createUIMessenger() {
 
 export function createMainMessenger() {
   return {
-    selectionChanged: (els: IExportSVG[]) => sendToUI('selectionChanged', els),
+    selectionChanged: (els: ISerializedSVG[]) =>
+      sendToUI('selectionChanged', els),
     initialized: (props: IGlobalSettings) => sendToUI('initialized', props)
   }
 }
