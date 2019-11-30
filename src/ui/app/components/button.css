@@ -13,6 +13,7 @@
   text-overflow: ellipsis;
 
   cursor: pointer;
+  user-select: none;
 }
 
 .button:hover {
@@ -25,7 +26,8 @@
 
 .button.disabled {
   opacity: 0.6;
-  user-select: none;
+  pointer-events: none;
+  cursor: initial;
 }
 
 .button.small {
@@ -71,4 +73,11 @@
 .textButton:hover {
   color:  #18a0fb
    /* #68aefb */
+}
+
+
+.textButton.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+  cursor: initial;
 }

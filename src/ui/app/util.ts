@@ -1,7 +1,12 @@
 import { saveAs } from 'file-saver'
 import JSZip from 'jszip'
+import * as React from 'react'
 
-import { ISVGOptimized } from './app'
+import { ISVGOptimized } from './svgo/types'
+
+export function _f() {
+  return
+}
 
 export function svgToUrl(svg: string) {
   return URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }))
@@ -16,7 +21,17 @@ export function getSize(str: string): number {
 }
 
 export function formatSize(bytes: number) {
-  return bytes < 1024 ? bytes + ' bytes' : f2(bytes / 1024) + 'K'
+  const b = 1024
+
+  if (bytes < b) {
+    return bytes + ' bytes'
+  } else if (bytes >= b && bytes < Math.pow(b, 2)) {
+    return f2(bytes / b) + 'K'
+  } else if (bytes >= Math.pow(b, 2) && bytes < Math.pow(b, 3)) {
+    return f2(bytes / Math.pow(b, 2)) + 'Mb'
+  } else if (bytes >= Math.pow(b, 3)) {
+    return f2(bytes / Math.pow(b, 3)) + 'Gb'
+  }
 }
 
 export function floor(a: number, precision = 4) {
@@ -90,4 +105,12 @@ export const saveAsZip = (svgs: ISVGOptimized[]) => {
   zip.generateAsync({ type: 'blob' }).then(data => {
     saveAs(data, 'export.zip')
   })
+}
+
+export function usePrev<T>(value: T): T | undefined {
+  const ref = React.useRef<T>()
+  React.useEffect(() => {
+    ref.current = value
+  })
+  return ref.current
 }

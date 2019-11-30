@@ -1,8 +1,7 @@
-import { createMainMessenger, subscribeToUI } from 'shared/messenger'
-import { defaultPluginsSettings } from 'shared/settings'
-import { IExportSVG } from 'shared/types'
+import { createMessenger } from 'shared/messengerX'
+import { ISerializedSVG } from 'shared/types'
 
-import { get, set } from './store'
+import { getSettings, getTotalSaved, set } from './store'
 import version from './version'
 
 // This shows the HTML page in "ui.html".
@@ -12,15 +11,17 @@ figma.showUI(__html__, {
   // position: 'last'
 })
 
-const messenger = createMainMessenger()
-
-subscribeToUI({
+const messenger = createMessenger('main')
+messenger.subscribe({
   settingsChanged(settings) {
     set('settings', settings)
+  },
+  totalSavedChanged(newTotal) {
+    set('totalSaved', newTotal)
   }
 })
 
-const serialize = async (node: SceneNode): Promise<IExportSVG> => {
+const serialize = async (node: SceneNode): Promise<ISerializedSVG> => {
   const svg = await node.exportAsync({ format: 'SVG' })
 
   return {
@@ -30,36 +31,24 @@ const serialize = async (node: SceneNode): Promise<IExportSVG> => {
   }
 }
 
+const getSerializedSelection = (selection: readonly SceneNode[]) =>
+  Promise.all(selection.map(serialize))
+
 const sendSerializedSelection = async (selection: readonly SceneNode[]) => {
-  const els = await Promise.all(selection.map(serialize))
-  console.log('Serialized element: ', els)
-  messenger.selectionChanged(els.filter(x => !!x.svg.length))
+  const els = await getSerializedSelection(selection)
+  console.log('Serialized elements: ', els)
+  messenger.send.selectionChanged(els.filter(x => !!x.svg.length))
 }
 
 const sendInitialized = async () => {
-  let settings = defaultPluginsSettings
-  let totalSaved = 0
+  const [settings, totalSaved, selection] = await Promise.all([
+    getSettings(),
+    getTotalSaved(),
+    getSerializedSelection(figma.currentPage.selection)
+  ])
 
-  try {
-    const [s, t] = await Promise.all([get('settings'), get('totalSaved')])
-    if (typeof s === 'undefined') {
-      set('settings', settings)
-    } else {
-      settings = s
-    }
-
-    if (typeof t === 'undefined') {
-      set('totalSaved', totalSaved)
-    } else {
-      totalSaved = t
-    }
-  } catch (e) {
-    console.error('[SVGO] Settings retrieving error', e)
-    set('settings', settings)
-    set('totalSaved', totalSaved)
-  }
-
-  messenger.initialized({
+  messenger.send.initialized({
+    svgs: selection,
     settings,
     totalSaved,
     version
@@ -69,13 +58,9 @@ const sendInitialized = async () => {
 function start() {
   sendInitialized()
 
-  setTimeout(() => {
-    figma.on('selectionchange', () =>
-      sendSerializedSelection(figma.currentPage.selection)
-    )
-
+  figma.on('selectionchange', () =>
     sendSerializedSelection(figma.currentPage.selection)
-  }, 1000)
+  )
 }
 
 start()

@@ -1,6 +1,6 @@
 import { PluginsSettings } from './settings'
 
-export interface IExportSVG {
+export interface ISerializedSVG {
   name: string
   id: string
   svg: Uint8Array

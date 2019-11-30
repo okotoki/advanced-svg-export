@@ -1,7 +1,7 @@
 import { PluginsSettings } from 'shared/settings'
 
 import { optimize } from '.'
-import { ISVGOptimized, ISVGProgress } from '../app'
+import { ISVGOptimized, ISVGProgress } from './types'
 
 const ctx: Worker = self as any
 
