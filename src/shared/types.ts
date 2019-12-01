@@ -7,6 +7,7 @@ export interface ISerializedSVG {
 }
 
 export interface IGlobalSettings {
+  userId: string
   settings: PluginsSettings
   totalSaved: number
   version: number

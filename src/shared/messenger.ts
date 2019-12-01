@@ -1,83 +1,139 @@
+import { isUndefined } from 'util'
+
 import { PluginsSettings } from './settings'
 import { IGlobalSettings, ISerializedSVG } from './types'
+import { isObject } from './utils'
 
-function sendToUI<T>(type: keyof Handlers, data: T) {
-  figma.ui.postMessage({
+const iFrameToMain = {
+  settingsChanged: (settings: PluginsSettings) =>
+    send('main', 'settingsChanged', settings),
+  totalSavedChanged: (newTotal: number) =>
+    send('main', 'totalSavedChanged', newTotal)
+}
+
+const mainToIframe = {
+  selectionChanged: (els: ISerializedSVG[]) =>
+    send('iframe', 'selectionChanged', els),
+  initialized: (props: IGlobalSettings & { svgs: ISerializedSVG[] }) =>
+    send('iframe', 'initialized', props)
+}
+
+type IframeToMainMessages = typeof iFrameToMain
+type MainToIframeMessages = typeof mainToIframe
+
+type MessengerType = 'iframe' | 'main'
+
+interface IMessenger<T, U> {
+  send: T
+  subscribe(handlers: Partial<U>): void
+  unsubscribe(): void
+}
+
+interface IMessage<T> {
+  type: keyof T
+  data: any
+}
+
+function send<T>(to: 'iframe', type: keyof MainToIframeMessages, data: T): void
+function send<T>(to: 'main', type: keyof IframeToMainMessages, data: T): void
+function send<T>(
+  to: MessengerType,
+  type: keyof MainToIframeMessages | keyof IframeToMainMessages,
+  data: T
+) {
+  const msg = {
     type,
     data
-  })
-}
+  }
 
-function sendToMain<T>(type: keyof MainHandlers, data: T) {
-  parent.postMessage({ pluginMessage: { type, data } }, '*')
-}
-
-export function createUIMessenger() {
-  return {
-    settingsChanged: (settings: PluginsSettings) =>
-      sendToMain('settingsChanged', settings)
+  if (to === 'iframe') {
+    figma.ui.postMessage(msg)
+  } else if (to === 'main') {
+    parent.postMessage({ pluginMessage: msg }, '*')
   }
 }
 
-export function createMainMessenger() {
-  return {
-    selectionChanged: (els: ISerializedSVG[]) =>
-      sendToUI('selectionChanged', els),
-    initialized: (props: IGlobalSettings) => sendToUI('initialized', props)
-  }
-}
+export function createMessenger(
+  type: 'iframe'
+): IMessenger<IframeToMainMessages, MainToIframeMessages>
+export function createMessenger(
+  type: 'main'
+): IMessenger<MainToIframeMessages, IframeToMainMessages>
 
-type Handlers = ReturnType<typeof createMainMessenger>
-type MainHandlers = ReturnType<typeof createUIMessenger>
-
-export function subscribeToUI(handlers: Partial<MainHandlers>) {
-  figma.ui.onmessage = (
-    data:
-      | {
-          type: keyof MainHandlers
-          data: any
-        }
-      | any
-  ) => {
-    console.log('Message from UI', data)
-
-    if (typeof data === 'object' && data !== null) {
-      const d = data as {
-        type: keyof MainHandlers
-        [k: string]: any
+export function createMessenger(
+  type: 'iframe' | 'main'
+):
+  | IMessenger<MainToIframeMessages, IframeToMainMessages>
+  | IMessenger<IframeToMainMessages, MainToIframeMessages> {
+  switch (type) {
+    case 'main':
+      if (isUndefined(figma)) {
+        throw Error('Attempted to create a messanger on wrong side.')
       }
+      return getMainMessenger()
+    case 'iframe':
+      return getIframeMessenger()
+    default:
+      throw Error('Unknown messenger type')
+  }
+}
 
-      if (d.type && typeof d.data !== 'undefined') {
-        const cb = handlers[d.type]
+function executeCb<T extends { [k: string]: (...x: any) => void }>(
+  data: IMessage<T> | undefined,
+  handlers: Partial<T>
+) {
+  if (
+    isUndefined(data) ||
+    !isObject(data) ||
+    !data.type ||
+    isUndefined(data.data)
+  ) {
+    return
+  }
 
-        if (!!cb) {
-          cb(d.data)
-        }
-      }
+  const cb = handlers[data.type]
+  if (!!cb) {
+    cb(data.data)
+  }
+}
+
+function getIframeMessenger(): IMessenger<
+  IframeToMainMessages,
+  MainToIframeMessages
+> {
+  const subscribe = (handlers: Partial<MainToIframeMessages>) =>
+    (onmessage = event => {
+      const data = event.data.pluginMessage as
+        | IMessage<MainToIframeMessages>
+        | undefined
+
+      executeCb(data, handlers)
+    })
+
+  return {
+    send: iFrameToMain,
+    subscribe,
+    unsubscribe() {
+      onmessage = null
     }
   }
 }
 
-export function subscribe(handlers: Partial<Handlers>) {
-  onmessage = event => {
-    const data = event.data.pluginMessage as
-      | {
-          type: keyof Handlers
-          data: any
-        }
-      | undefined
+function getMainMessenger(): IMessenger<
+  MainToIframeMessages,
+  IframeToMainMessages
+> {
+  const subscribe = (handlers: Partial<IframeToMainMessages>) =>
+    (figma.ui.onmessage = (data: IMessage<IframeToMainMessages>) => {
+      console.log('Message from UI', data)
+      executeCb(data, handlers)
+    })
 
-    if (typeof data === 'undefined') {
-      return
+  return {
+    send: mainToIframe,
+    subscribe,
+    unsubscribe() {
+      figma.ui.onmessage = undefined
     }
-    const cb = handlers[data.type]
-
-    if (typeof cb !== 'undefined') {
-      cb(data.data)
-    }
-  }
-
-  return () => {
-    onmessage = null
   }
 }

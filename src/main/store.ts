@@ -1,11 +1,14 @@
 import { defaultPluginsSettings, PluginsSettings } from 'shared/settings'
+import { uuid } from 'shared/utils'
 
+export function get(key: 'userId'): Promise<string | undefined>
 export function get(key: 'settings'): Promise<PluginsSettings | undefined>
 export function get(key: 'totalSaved'): Promise<number | undefined>
 export function get(key: string) {
   return figma.clientStorage.getAsync(key)
 }
 
+export function set(key: 'userId', value: string): Promise<void>
 export function set(key: 'settings', value: PluginsSettings): Promise<void>
 export function set(key: 'totalSaved', value: number): Promise<void>
 
@@ -49,4 +52,23 @@ export const getTotalSaved = async () => {
   }
 
   return totalSaved
+}
+
+export const getUserId = async () => {
+  let userId = uuid()
+
+  try {
+    const id = await get('userId')
+
+    if (typeof id === 'undefined') {
+      set('userId', userId)
+    } else {
+      userId = id
+    }
+  } catch (e) {
+    console.error('[SVGO] TotalSaved retrieving error', e)
+    set('userId', userId)
+  }
+
+  return userId
 }

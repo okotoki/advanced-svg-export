@@ -1,3 +1,4 @@
+import * as Dotenv from 'dotenv-webpack'
 import * as HtmlWebpackInlineSourcePlugin from 'html-webpack-inline-source-plugin'
 import * as HtmlWebpackPlugin from 'html-webpack-plugin'
 import * as path from 'path'
@@ -63,6 +64,7 @@ const createConfig = (
     },
     plugins: [
       // new webpack.EnvironmentPlugin(["NODE_ENV", "API_ROOT", "API_KEY"]),
+      new Dotenv(),
       new TypedCssModulesPlugin({
         globPattern: 'src/**/*.css'
       }),
