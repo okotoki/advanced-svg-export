@@ -1,6 +1,6 @@
 {
-  "name": "Better Image Export",
-  "id": "778638681237230891",
+  "name": "Advanced SVG Export",
+  "id": "782713260363070260",
   "api": "1.0.0",
   "main": "dist/main.js",
   "ui": "dist/ui.html",
