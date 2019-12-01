@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { createMessenger } from 'shared/messengerX'
+import { createMessenger } from 'shared/messenger'
 import { PluginsSettings } from 'shared/settings'
 
 import styles from './app.css'
@@ -12,9 +12,11 @@ import { initialState, reducer } from './state'
 import { serializedToProgress } from './svgo'
 import SVGOWorker from './svgo/svgo.worker'
 import { ISVGOptimized, ISVGProgress } from './svgo/types'
+import { createTracker } from './tracker/tracker'
 import { cls, getSize, saveAsZip } from './util'
 
 const messenger = createMessenger('iframe')
+const tracker = createTracker()
 const svgoWorker = new SVGOWorker(undefined as any)
 
 const sendToWorker = (
@@ -81,6 +83,9 @@ export const App = () => {
           type: 'INITIALIZE',
           data: { ...msg, svgs, initialized: true }
         })
+
+        tracker.init(msg.version, msg.userId)
+        tracker.started()
       },
       selectionChanged: els => {
         const svgs = serializedToProgress(els)
@@ -108,8 +113,16 @@ export const App = () => {
   const l = state.svgs.length
 
   const closeSettings = () => setShowSettings(false)
-  const openSettings = () => setShowSettings(true)
-  const onSaveSettings = (settings: PluginsSettings, keepOpen?: boolean) => {
+  const openSettings = () => {
+    setShowSettings(true)
+    tracker.settingsOpened()
+  }
+
+  const onSettingsChanged = (
+    settings: PluginsSettings,
+    defaultsRestored: boolean,
+    keepOpen?: boolean
+  ) => {
     const svgs = state.svgs
     const redoSvgs = svgs.map(
       x =>
@@ -129,6 +142,7 @@ export const App = () => {
     if (!keepOpen) {
       closeSettings()
     }
+    tracker.settingsChanged(settings, defaultsRestored)
   }
 
   /*
@@ -143,6 +157,11 @@ export const App = () => {
     dispatch({ type: 'TOTAL_VALUE_INC', data: sizeDiff })
   }
 
+  const onExportOne = (sizeDiff: number) => {
+    incTotalValue(sizeDiff)
+    tracker.exportInitiated()
+  }
+
   const onExportAll = () => {
     const sizeDiff = state.svgs.reduce((acc, svg) => {
       if (!svg.isDone) {
@@ -154,6 +173,7 @@ export const App = () => {
 
     incTotalValue(sizeDiff)
     saveAsZip(state.svgs as ISVGOptimized[])
+    tracker.exportInitiated(true)
   }
 
   const optimizingFinished = !state.svgs.find(x => !x.isDone)
@@ -178,7 +198,7 @@ export const App = () => {
               </div>
             ) : (
               state.svgs.map(svg => (
-                <File el={svg} key={svg.id} onExport={incTotalValue} />
+                <File el={svg} key={svg.id} onExport={onExportOne} />
               ))
             )}
           </div>
@@ -193,7 +213,7 @@ export const App = () => {
         <Settings
           totalSaved={state.totalSaved}
           onCloseClick={closeSettings}
-          onSaveClick={onSaveSettings}
+          onSettingsChanged={onSettingsChanged}
           settings={state.settings}
         />
       ) : null}

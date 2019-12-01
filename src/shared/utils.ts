@@ -2,7 +2,7 @@
  * /shared – contains shared code for both iframe (/ui) and main thread sandbox (/main) environments
  */
 
-export function isUndefined(val: any) {
+export function isUndefined(val: any | undefined) {
   return typeof val === 'undefined'
 }
 
@@ -57,4 +57,14 @@ export function isEqual(
       isEqual((x as { [k: string]: any })[i], (y as { [k: string]: any })[i])
     )
   )
+}
+
+export function uuid() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    // tslint:disable-next-line
+    const r = (Math.random() * 16) | 0
+    // tslint:disable-next-line
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
 }

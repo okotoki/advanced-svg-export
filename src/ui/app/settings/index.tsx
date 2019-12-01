@@ -11,7 +11,11 @@ import * as styles from './settings.css'
 interface ISettingsProps {
   totalSaved: number
   settings: PluginsSettings
-  onSaveClick(settings: PluginsSettings, keepOpen?: boolean): void
+  onSettingsChanged(
+    settings: PluginsSettings,
+    defaultsRestored: boolean,
+    keepOpen?: boolean
+  ): void
   onCloseClick(): void
 }
 
@@ -38,29 +42,28 @@ export const Settings = ({
   totalSaved,
   settings: initialSettings,
   onCloseClick,
-  onSaveClick
+  onSettingsChanged
 }: ISettingsProps) => {
   const [state, setState] = React.useState(settingsToState(initialSettings))
   const [latestSaveTs, setLatestSaveTs] = React.useState(0)
 
-  const onSave = (keepOpen?: boolean) => {
-    onSaveClick(stateToSettings(state), keepOpen)
+  const onSaveClick = (keepOpen?: boolean) => {
+    onSettingsChanged(stateToSettings(state), false, keepOpen)
   }
 
   const onRestoreDefaultsClick = () => {
     setState(settingsToState(defaultPluginsSettings))
-    onSaveClick(defaultPluginsSettings, true)
+    onSettingsChanged(defaultPluginsSettings, true, true)
     setLatestSaveTs(Date.now())
   }
 
-  const onSettingChanged = (id: keyof PluginsSettings, checked: boolean) => {
+  const onChange = (id: keyof PluginsSettings, checked: boolean) => {
     const newSettings = state.map(setting =>
       setting.id === id ? { ...setting, active: checked } : setting
     )
     setLatestSaveTs(Date.now())
     setState(newSettings)
-    onSaveClick(stateToSettings(newSettings), true)
-    // onSave(true)
+    onSettingsChanged(stateToSettings(newSettings), false, true)
   }
 
   const restoreDefaultsDisabled = isEqual(
@@ -78,7 +81,7 @@ export const Settings = ({
             latestSaveTs={latestSaveTs}
             restoreDefaultsDisabled={restoreDefaultsDisabled}
             onRestoreDefaults={onRestoreDefaultsClick}
-            onSaveClick={onSave}
+            onSaveClick={onSaveClick}
             onCloseClick={onCloseClick}
           />
         }
@@ -101,9 +104,7 @@ export const Settings = ({
                   id={x.id}
                   type="checkbox"
                   checked={x.active}
-                  onChange={event =>
-                    onSettingChanged(x.id, event.target.checked)
-                  }
+                  onChange={event => onChange(x.id, event.target.checked)}
                 />
               </label>
               <label htmlFor={x.id} {...cls(styles.label)}>

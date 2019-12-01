@@ -1,7 +1,7 @@
-import { createMessenger } from 'shared/messengerX'
+import { createMessenger } from 'shared/messenger'
 import { ISerializedSVG } from 'shared/types'
 
-import { getSettings, getTotalSaved, set } from './store'
+import { getSettings, getTotalSaved, getUserId, set } from './store'
 import version from './version'
 
 // This shows the HTML page in "ui.html".
@@ -41,14 +41,16 @@ const sendSerializedSelection = async (selection: readonly SceneNode[]) => {
 }
 
 const sendInitialized = async () => {
-  const [settings, totalSaved, selection] = await Promise.all([
+  const [settings, totalSaved, userId, selection] = await Promise.all([
     getSettings(),
     getTotalSaved(),
+    getUserId(),
     getSerializedSelection(figma.currentPage.selection)
   ])
 
   messenger.send.initialized({
     svgs: selection,
+    userId,
     settings,
     totalSaved,
     version
