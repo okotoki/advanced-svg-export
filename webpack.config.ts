@@ -5,6 +5,7 @@ import * as path from 'path'
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin'
 import { TypedCssModulesPlugin } from 'typed-css-modules-webpack-plugin'
 import webpack from 'webpack'
+import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 
 const createConfig = (
   env: any,
@@ -63,6 +64,7 @@ const createConfig = (
       plugins: [new TsconfigPathsPlugin()]
     },
     plugins: [
+      argv.mode === 'production' ? new BundleAnalyzerPlugin() : () => {},
       // new webpack.EnvironmentPlugin(["NODE_ENV", "API_ROOT", "API_KEY"]),
       new Dotenv(),
       new TypedCssModulesPlugin({
