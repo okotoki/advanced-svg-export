@@ -110,8 +110,8 @@
     width: 100%;
     float: left;
     font-size: 13px;
-    padding: 15px 0 5px 0;
-    line-height: 26px;
+    padding-top: 12px;
+    line-height: 24px;
     margin-top: 25px;
     position: relative;
     color: #bfbfbf;
@@ -141,12 +141,11 @@
 
 .totalSaved {
   color: #e2e2e2;
-  font-size: 16px;
-  line-height: 32px;
+  font-size: 14px;
+  line-height: 28px;
 }
 
 .totalSaved b {
-  font-size: 18px;
-  line-height: 26px;
-  color: #3fff36;
+  font-size: 16px;
+  color: #18a0fb;
 }

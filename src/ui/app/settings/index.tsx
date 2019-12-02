@@ -120,7 +120,7 @@ export const Settings = ({
                 Saved you <b>{formatSize(totalSaved)}</b> overall
               </div>
             ) : null}
-            Crafted for humans 🤓 of Figma community worldwide 🌏.
+            Crafted for humans 🤓 of Figma community worldwide 🌏
             <br />
             {new Date().getFullYear() === 2019
               ? 2019
