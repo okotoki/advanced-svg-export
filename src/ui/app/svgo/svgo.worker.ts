@@ -24,6 +24,7 @@ ctx.addEventListener('message', event => {
       isDone: true,
       svgOptimized: x.data,
       width: x.info.width,
+      exportName: svg.name.substr(0, 40),
       height: x.info.height
     }
     ctx.postMessage(res)

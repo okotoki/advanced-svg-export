@@ -43,7 +43,7 @@ export const File = ({ el, onExport }: IFileProps) => {
               size="small"
               href={svgToUrl(el.svgOptimized)}
               onClick={onExportClick}
-              download={el.name + '.svg'}
+              download={el.exportName + '.svg'}
             >
               Export
             </LinkButton>

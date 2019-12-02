@@ -1,6 +1,7 @@
 import { saveAs } from 'file-saver'
 import JSZip from 'jszip'
 import * as React from 'react'
+import { isUndefined } from 'shared/utils'
 
 import { ISVGOptimized } from './svgo/types'
 
@@ -97,9 +98,17 @@ export function cls(...cs: ClassNameLike[]): { className: string | undefined } {
 
 export const saveAsZip = (svgs: ISVGOptimized[]) => {
   const zip = new JSZip()
-
+  const names: { [k: string]: number } = {}
   svgs.forEach(x => {
-    zip.file(x.name + '.svg', x.svgOptimized, { binary: false })
+    const n = x.exportName.toLowerCase()
+
+    names[n] = isUndefined(names[n]) ? 0 : names[n] + 1
+
+    zip.file(
+      `${x.exportName}${names[n] > 0 ? ' ' + names[n] : ''}.svg`,
+      x.svgOptimized,
+      { binary: false }
+    )
   })
 
   zip.generateAsync({ type: 'blob' }).then(data => {

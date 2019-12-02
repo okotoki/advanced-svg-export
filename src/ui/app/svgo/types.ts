@@ -13,4 +13,5 @@ export interface ISVGOptimized extends ISVG {
   svgOptimized: string
   width: number
   height: number
+  exportName: string
 }
