@@ -4,13 +4,14 @@ import * as HtmlWebpackPlugin from 'html-webpack-plugin'
 import * as path from 'path'
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin'
 import { TypedCssModulesPlugin } from 'typed-css-modules-webpack-plugin'
-import webpack from 'webpack'
+import * as webpack from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 
 const createConfig = (
   env: any,
   argv: webpack.Configuration
 ): webpack.Configuration => {
+  const isProd = argv.mode === 'production'
   return {
     mode: argv.mode,
     devtool: false,
@@ -64,8 +65,11 @@ const createConfig = (
       plugins: [new TsconfigPathsPlugin()]
     },
     plugins: [
-      argv.mode === 'production' ? new BundleAnalyzerPlugin() : () => {},
+      isProd ? new BundleAnalyzerPlugin() : () => {},
       // new webpack.EnvironmentPlugin(["NODE_ENV", "API_ROOT", "API_KEY"]),
+      new webpack.EnvironmentPlugin({
+        DEBUG: !isProd
+      }),
       new Dotenv(),
       new TypedCssModulesPlugin({
         globPattern: 'src/**/*.css'

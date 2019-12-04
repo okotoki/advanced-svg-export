@@ -24,7 +24,6 @@ interface IFileProps {
   onExport(sizeDiff: number): void
 }
 export const File = ({ el, onExport }: IFileProps) => {
-  // console.log('File Render', el)
   const onExportClick = () => {
     if (!el.isDone) {
       return

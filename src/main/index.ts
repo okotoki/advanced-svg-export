@@ -1,9 +1,13 @@
+import 'shared/debug'
+
+import * as debug from 'debug'
 import { createMessenger } from 'shared/messenger'
 import { ISerializedSVG } from 'shared/types'
 
 import { getSettings, getTotalSaved, getUserId, set } from './store'
 import version from './version'
 
+const log = debug('[SVGO] Main')
 // This shows the HTML page in "ui.html".
 figma.showUI(__html__, {
   width: 400,
@@ -36,7 +40,6 @@ const getSerializedSelection = (selection: readonly SceneNode[]) =>
 
 const sendSerializedSelection = async (selection: readonly SceneNode[]) => {
   const els = await getSerializedSelection(selection)
-  console.log('Serialized elements: ', els)
   messenger.send.selectionChanged(els.filter(x => !!x.svg.length))
 }
 
@@ -60,9 +63,10 @@ const sendInitialized = async () => {
 function start() {
   sendInitialized()
 
-  figma.on('selectionchange', () =>
+  figma.on('selectionchange', () => {
+    log('Selection changed')
     sendSerializedSelection(figma.currentPage.selection)
-  )
+  })
 }
 
 start()

@@ -1,8 +1,11 @@
+import * as debug from 'debug'
 import { isUndefined } from 'util'
 
 import { PluginsSettings } from './settings'
 import { IGlobalSettings, ISerializedSVG } from './types'
 import { isObject } from './utils'
+
+const log = debug('[SVGO] Messenger')
 
 const iFrameToMain = {
   settingsChanged: (settings: PluginsSettings) =>
@@ -45,6 +48,8 @@ function send<T>(
     type,
     data
   }
+
+  log(`Send '${type}' to ${to}`, data)
 
   if (to === 'iframe') {
     figma.ui.postMessage(msg)
@@ -93,6 +98,7 @@ function executeCb<T extends { [k: string]: (...x: any) => void }>(
 
   const cb = handlers[data.type]
   if (!!cb) {
+    log(`Message received '${data.type}'`, data.data)
     cb(data.data)
   }
 }
@@ -125,7 +131,6 @@ function getMainMessenger(): IMessenger<
 > {
   const subscribe = (handlers: Partial<IframeToMainMessages>) =>
     (figma.ui.onmessage = (data: IMessage<IframeToMainMessages>) => {
-      console.log('Message from UI', data)
       executeCb(data, handlers)
     })
 

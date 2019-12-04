@@ -1727,7 +1727,6 @@ MixpanelPersistence.prototype.save = function() {
 
 MixpanelPersistence.prototype.remove = function() {
     // remove both domain and subdomain cookies
-  console.log('>>>', this.storage)
     this.storage.remove(this.name, false);
     this.storage.remove(this.name, true);
 };
@@ -3111,7 +3110,6 @@ var create_mplib = function(token, config, name) {
         instance = new MixpanelLib();
     }
 
-    console.log('>>>>>>> here', config)
     instance._init(token, config, name);
     instance['people'] = new MixpanelPeople();
     instance['people']._init(instance);

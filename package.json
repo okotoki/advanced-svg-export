@@ -11,6 +11,7 @@
     "build": "NODE_ENV=production tsc && webpack --mode=production"
   },
   "dependencies": {
+    "@types/debug": "^4.1.5",
     "@types/figma": "^1.0.1",
     "@types/file-saver": "^2.0.1",
     "@types/jszip": "^3.1.6",
@@ -18,6 +19,7 @@
     "@types/react": "^16.9.11",
     "@types/react-dom": "^16.9.4",
     "@types/svgo": "^1.3.0",
+    "debug": "^4.1.1",
     "file-saver": "^2.0.2",
     "jszip": "^3.2.2",
     "react": "^16.12.0",
