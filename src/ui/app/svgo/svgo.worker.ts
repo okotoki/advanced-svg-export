@@ -1,8 +1,12 @@
+import 'shared/debug'
+
+import * as debug from 'debug'
 import { PluginsSettings } from 'shared/settings'
 
 import { optimize } from '.'
 import { ISVGOptimized, ISVGProgress } from './types'
 
+const log = debug('[SVGO] Worker')
 const ctx: Worker = self as any
 
 ctx.addEventListener('message', event => {
@@ -11,13 +15,12 @@ ctx.addEventListener('message', event => {
     settings: PluginsSettings
   }
 
-  console.log(event.data)
-  console.log('Worker received message')
-  const lbl = 'optimizing ' + svg.id
-  console.time(lbl)
+  log('Worker received message', event.data)
+  const lbl = 'optimizing ' + svg.name
+  log(lbl)
 
   optimize(svg.svgOriginal, settings, { multipass: true }).then(x => {
-    console.timeEnd(lbl)
+    log(lbl)
 
     const res: ISVGOptimized = {
       ...svg,

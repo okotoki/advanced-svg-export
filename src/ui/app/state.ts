@@ -1,7 +1,10 @@
+import * as debug from 'debug'
 import { PluginsSettings } from 'shared/settings'
 import { IGlobalSettings } from 'shared/types'
 
 import { ISVGOptimized, ISVGProgress } from './svgo/types'
+
+const log = debug('[SVGO] State')
 
 interface IStateInitial extends Partial<IGlobalSettings> {
   svgs?: []
@@ -29,7 +32,7 @@ export const initialState: State = {
 }
 
 export const reducer = (state: State, action: Actions): State => {
-  console.log('Dispatch fired', action.type, action.data)
+  log('Dispatch fired', action.type, action.data)
   if (action.type === 'INITIALIZE') {
     return action.data
   }

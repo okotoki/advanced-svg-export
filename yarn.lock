@@ -26,6 +26,10 @@
   dependencies:
     postcss "7.x.x"
 
+"@types/debug@^4.1.5":
+  version "4.1.5"
+  resolved "https://registry.npmjs.org/@types/debug/-/debug-4.1.5.tgz#b14efa8852b7768d898906613c23f688713e02cd"
+
 "@types/figma@^1.0.1":
   version "1.0.1"
   resolved "https://registry.npmjs.org/@types/figma/-/figma-1.0.1.tgz#0a73b1131ba3aa4c2f23fef7ec12f775dd6fa76b"
@@ -980,6 +984,12 @@ debug@2.6.9, debug@^2.2.0, debug@^2.3.3:
 debug@^3.2.6:
   version "3.2.6"
   resolved "https://registry.npmjs.org/debug/-/debug-3.2.6.tgz#e83d17de16d8a7efb7717edbe5fb10135eee629b"
+  dependencies:
+    ms "^2.1.1"
+
+debug@^4.1.1:
+  version "4.1.1"
+  resolved "https://registry.npmjs.org/debug/-/debug-4.1.1.tgz#3b72260255109c6b589cee050f1d516139664791"
   dependencies:
     ms "^2.1.1"
 

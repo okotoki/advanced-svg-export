@@ -1,3 +1,6 @@
+import 'shared/debug'
+
+import * as debug from 'debug'
 import * as React from 'react'
 import { createMessenger } from 'shared/messenger'
 import { PluginsSettings } from 'shared/settings'
@@ -14,6 +17,8 @@ import SVGOWorker from './svgo/svgo.worker'
 import { ISVGOptimized, ISVGProgress } from './svgo/types'
 import { createTracker } from './tracker/tracker'
 import { cls, getSize, saveAsZip } from './util'
+
+const log = debug('[SVGO] App')
 
 const messenger = createMessenger('iframe')
 const tracker = createTracker()
@@ -69,13 +74,13 @@ const Header: React.FC<IHeaderProps> = ({
 export const App = () => {
   const [state, dispatch] = React.useReducer(reducer, initialState)
   const [showSettings, setShowSettings] = React.useState(false)
-  console.log('AppX re-render')
+  log('Rendered')
 
   React.useEffect(() => {
-    console.log('Use Effect run')
     messenger.subscribe({
       initialized: msg => {
-        console.log('[SVGO] Initialized', msg)
+        log('Initialized', msg)
+
         const svgs = serializedToProgress(msg.svgs)
         sendToWorker(svgs, msg.settings!)
 
@@ -96,7 +101,6 @@ export const App = () => {
     })
 
     svgoWorker.onmessage = ({ data }: { data: ISVGOptimized }) => {
-      // console.log('Received Optimized SVG', data)
       dispatch({ type: 'OPTIMIZED_SVG', data })
     }
 
