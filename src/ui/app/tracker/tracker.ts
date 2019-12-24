@@ -1,6 +1,5 @@
+import * as mixpanel from 'mixpanel-figma'
 import { PluginsSettings } from 'shared/settings'
-
-import * as mixpanel from './patchedMixpanel'
 
 let trackerEnabled = true
 

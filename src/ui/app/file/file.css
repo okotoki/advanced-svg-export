@@ -3,6 +3,7 @@
   padding: 4px 0;
   font-size: 12px;
   align-items: center;
+  justify-content: space-between;
   color: #080808;
   min-height: 32px;
 }
@@ -22,11 +23,17 @@
 
 .savings {
   margin: 0 16px;
-  color: #3cd23c;
+  color: #2ef95d;
   width: 30px;
   text-align: right;
 }
 
 .progress {
   margin-left: auto;
+}
+
+.checkmark {
+  top: 1px;
+  position: relative;
+  margin-right: 5px;
 }
