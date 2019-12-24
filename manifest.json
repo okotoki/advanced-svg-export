@@ -3,6 +3,5 @@
   "id": "782713260363070260",
   "api": "1.0.0",
   "main": "dist/main.js",
-  "ui": "dist/ui.html",
-  "enableProposedApi": true
+  "ui": "dist/ui.html"
 }
