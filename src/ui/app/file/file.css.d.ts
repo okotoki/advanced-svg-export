@@ -4,6 +4,7 @@ declare const styles: {
   readonly "size": string;
   readonly "savings": string;
   readonly "progress": string;
+  readonly "checkmark": string;
 };
 export = styles;
 

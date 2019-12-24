@@ -2,7 +2,7 @@ import * as React from 'react'
 
 import { LinkButton } from '../components/button'
 import { ISVGOptimized, ISVGProgress } from '../svgo/types'
-import { f2, formatSize, getSize, svgToUrl } from '../util'
+import { cls, f2, formatSize, getSize, svgToUrl } from '../util'
 import * as styles from './file.css'
 
 const FileStats = ({ x }: { x: ISVGOptimized }) => {
@@ -19,24 +19,54 @@ const FileStats = ({ x }: { x: ISVGOptimized }) => {
   )
 }
 
+const Checkmark = () => (
+  <span {...cls(styles.checkmark)}>
+    <svg
+      width="14"
+      height="11"
+      viewBox="0 0 14 11"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M1 5.71911L5.44944 9.58428L13 1"
+        stroke="#2ef95d"
+        strokeWidth="2"
+      />
+    </svg>
+  </span>
+)
+
 interface IFileProps {
   el: ISVGOptimized | ISVGProgress
   onExport(sizeDiff: number): void
 }
+
 export const File = ({ el, onExport }: IFileProps) => {
+  const [exportClicked, setExportClicked] = React.useState(false)
+
   const onExportClick = () => {
     if (!el.isDone) {
       return
     }
     const sizeDiff = getSize(el.svgOriginal) - getSize(el.svgOptimized)
     onExport(sizeDiff)
+    setExportClicked(true)
   }
+
   return (
     <div className={styles.file}>
-      <div className={styles.name}>{el.name}</div>
+      <div className={styles.name}>
+        {exportClicked ? (
+          <span>
+            <Checkmark />
+          </span>
+        ) : null}
+        {el.name}
+      </div>
       {el.isDone ? (
         <>
-          <FileStats x={el} key={el.id} />
+          {!exportClicked ? <FileStats x={el} key={el.id} /> : null}
           <div>
             <LinkButton
               size="small"
@@ -44,7 +74,7 @@ export const File = ({ el, onExport }: IFileProps) => {
               onClick={onExportClick}
               download={el.exportName + '.svg'}
             >
-              Export
+              Export{exportClicked ? ' again' : ''}
             </LinkButton>
           </div>
         </>
