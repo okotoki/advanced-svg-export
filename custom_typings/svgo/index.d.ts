@@ -108,6 +108,10 @@ declare module 'svgo/plugins/removeComments' {
   const e: SVGO.Plugin
   export = e
 }
+declare module 'svgo/plugins/removeAttrs' {
+  const e: SVGO.Plugin
+  export = e
+}
 declare module 'svgo/plugins/removeDesc' {
   const e: SVGO.Plugin
   export = e
