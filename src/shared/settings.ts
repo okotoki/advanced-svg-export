@@ -50,7 +50,7 @@ export const defaultPluginsSettings = {
   removeTitle: true,
   removeDesc: true,
   removeDimensions: false,
-  // removeAttrs: true,
+  removeAttrs: false,
   // removeElementsByAttr: true,
   // removeAttributesBySelector: true,
   // addClassesToSVGElement: true,
@@ -79,6 +79,10 @@ export function getPluginsConfiguration(
     if (k === 'prefixIds') {
       config[k].params = {
         prefix
+      }
+    } else if (k === 'removeAttrs') {
+      config[k].params = {
+        attrs: '*:(fill|stroke):none'
       }
     }
 

@@ -17,6 +17,7 @@ import minifyStyles from 'svgo/plugins/minifyStyles'
 import moveElemsAttrsToGroup from 'svgo/plugins/moveElemsAttrsToGroup'
 import moveGroupAttrsToElems from 'svgo/plugins/moveGroupAttrsToElems'
 import prefixIds from 'svgo/plugins/prefixIds'
+import removeAttrs from 'svgo/plugins/removeAttrs'
 import removeComments from 'svgo/plugins/removeComments'
 import removeDesc from 'svgo/plugins/removeDesc'
 import removeDimensions from 'svgo/plugins/removeDimensions'
@@ -89,7 +90,7 @@ export const pluginsData = {
   removeTitle,
   removeDesc,
   removeDimensions,
-  // removeAttrs,
+  removeAttrs,
   // removeElementsByAttr,
   // removeAttributesBySelector,
   // addClassesToSVGElement,
@@ -139,6 +140,10 @@ export const pluginsWithDescription: {
   {
     id: 'inlineStyles',
     name: 'Inline styles'
+  },
+  {
+    id: 'removeAttrs',
+    name: 'Remove (fill|stroke):none'
   },
   {
     id: 'removeDoctype',
