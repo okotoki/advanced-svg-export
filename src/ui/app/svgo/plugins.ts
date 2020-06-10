@@ -1,4 +1,4 @@
-import { PluginsSettings } from 'shared/settings'
+import { PluginsConfiguration, PluginsSettings } from 'shared/settings'
 import cleanupAttrs from 'svgo/plugins/cleanupAttrs'
 import cleanupEnableBackground from 'svgo/plugins/cleanupEnableBackground'
 import cleanupIDs from 'svgo/plugins/cleanupIDs'
@@ -16,6 +16,7 @@ import mergePaths from 'svgo/plugins/mergePaths'
 import minifyStyles from 'svgo/plugins/minifyStyles'
 import moveElemsAttrsToGroup from 'svgo/plugins/moveElemsAttrsToGroup'
 import moveGroupAttrsToElems from 'svgo/plugins/moveGroupAttrsToElems'
+import prefixIds from 'svgo/plugins/prefixIds'
 import removeComments from 'svgo/plugins/removeComments'
 import removeDesc from 'svgo/plugins/removeDesc'
 import removeDimensions from 'svgo/plugins/removeDimensions'
@@ -56,7 +57,7 @@ export const pluginsData = {
   minifyStyles,
   convertStyleToAttrs,
   cleanupIDs,
-  // prefixIds,
+  prefixIds,
   removeRasterImages,
   removeUselessDefs,
   cleanupNumericValues,
@@ -113,11 +114,15 @@ function arrangePluginsByType(plugins: SVGO.Plugin[]) {
     }, [] as SVGO.Plugin[][])
 }
 
-export const pluginsByType = (settings: PluginsSettings) => {
+export const pluginsByType = (settings: PluginsConfiguration) => {
   const plugins = Object.assign({}, pluginsData)
   Object.keys(settings).forEach(id => {
-    plugins[id as keyof PluginsSettings].active =
-      settings[id as keyof PluginsSettings]
+    const i = id as keyof PluginsSettings
+    plugins[i].active = settings[i].active
+
+    if (!!settings[i].params) {
+      Object.assign(plugins[i].params, settings[i].params)
+    }
   })
 
   return arrangePluginsByType(Object.values(plugins))
@@ -234,6 +239,10 @@ export const pluginsWithDescription: {
   {
     id: 'cleanupIDs',
     name: 'Clean IDs'
+  },
+  {
+    id: 'prefixIds',
+    name: 'Prefix IDs'
   },
   {
     id: 'cleanupNumericValues',

@@ -1,4 +1,4 @@
-import { PluginsSettings } from 'shared/settings'
+import { PluginsConfiguration } from 'shared/settings'
 import { ISerializedSVG } from 'shared/types'
 import js2svg from 'svgo/lib/svgo/js2svg'
 import SVGOplugins from 'svgo/lib/svgo/plugins'
@@ -21,7 +21,8 @@ interface ISVGJS {
 
 export function optimizeOnce(
   svgstr: string,
-  settings: PluginsSettings,
+  multipassCount: number,
+  settings: PluginsConfiguration,
   callback: (x: ISVGJS) => void
 ) {
   svg2js(svgstr, svgjs => {
@@ -30,7 +31,11 @@ export function optimizeOnce(
       return
     }
 
-    svgjs = SVGOplugins(svgjs, { input: 'string' }, pluginsByType(settings))
+    svgjs = SVGOplugins(
+      svgjs,
+      { multipassCount, input: 'string' },
+      pluginsByType(settings)
+    )
 
     callback(js2svg(svgjs, js2svgConfig))
   })
@@ -42,12 +47,12 @@ interface IConfig {
 
 export function optimize(
   svgstr: string,
-  settings: PluginsSettings,
+  settings: PluginsConfiguration,
   config: IConfig = {}
 ) {
   return new Promise<ISVGJS>((resolve, reject) => {
     const maxPassCount = config.multipass ? 10 : 1
-    let counter = 1
+    let counter = 0
     let prevSize = Number.POSITIVE_INFINITY
 
     const cb = (svgjs: ISVGJS) => {
@@ -58,13 +63,13 @@ export function optimize(
 
       if (++counter < maxPassCount && svgjs.data.length < prevSize) {
         prevSize = svgjs.data.length
-        optimizeOnce(svgjs.data, settings, cb)
+        optimizeOnce(svgjs.data, counter, settings, cb)
       } else {
         resolve(svgjs)
       }
     }
 
-    optimizeOnce(svgstr, settings, cb)
+    optimizeOnce(svgstr, counter, settings, cb)
   })
 }
 
