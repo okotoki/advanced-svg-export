@@ -1,4 +1,10 @@
-export type PluginsSettings = typeof defaultPluginsSettings
+export type PluginsSettings = typeof defaultPluginsSettings & {
+  prefixIds: string | boolean
+}
+
+export type SVGOSettings = Partial<PluginsSettings> & {}
+
+export type PluginNames = keyof typeof defaultPluginsSettings
 
 export const defaultPluginsSettings = {
   removeDoctype: true,
@@ -12,7 +18,7 @@ export const defaultPluginsSettings = {
   minifyStyles: true,
   convertStyleToAttrs: true,
   cleanupIDs: true,
-  // prefixIds: true,
+  prefixIds: true,
   removeRasterImages: false,
   removeUselessDefs: true,
   cleanupNumericValues: true,
@@ -51,4 +57,31 @@ export const defaultPluginsSettings = {
   removeStyleElement: false,
   removeScriptElement: false
   // addAttributesToSVGElement,
+}
+
+export type PluginsConfiguration = {
+  [key in keyof PluginsSettings]: {
+    active: boolean
+    params?: {
+      [k: string]: any
+    }
+  }
+}
+
+export function getPluginsConfiguration(
+  settings: PluginsSettings,
+  prefix: string
+): PluginsConfiguration {
+  return Object.keys(settings).reduce((config, key) => {
+    const k = key as keyof PluginsSettings
+    config[k] = { active: settings[k] }
+
+    if (k === 'prefixIds') {
+      config[k].params = {
+        prefix
+      }
+    }
+
+    return config
+  }, {} as PluginsConfiguration)
 }

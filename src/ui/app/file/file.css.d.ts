@@ -1,10 +1,10 @@
 declare const styles: {
+  readonly "checkmark": string;
   readonly "file": string;
   readonly "name": string;
-  readonly "size": string;
-  readonly "savings": string;
   readonly "progress": string;
-  readonly "checkmark": string;
+  readonly "savings": string;
+  readonly "size": string;
 };
 export = styles;
 

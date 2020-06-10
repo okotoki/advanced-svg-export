@@ -1,7 +1,7 @@
 import 'shared/debug'
 
 import * as debug from 'debug'
-import { PluginsSettings } from 'shared/settings'
+import { getPluginsConfiguration, PluginsSettings } from 'shared/settings'
 
 import { optimize } from '.'
 import { ISVGOptimized, ISVGProgress } from './types'
@@ -19,7 +19,9 @@ ctx.addEventListener('message', event => {
   const lbl = 'optimizing ' + svg.name
   log(lbl)
 
-  optimize(svg.svgOriginal, settings, { multipass: true }).then(x => {
+  const config = getPluginsConfiguration(settings, svg.name)
+
+  optimize(svg.svgOriginal, config, { multipass: true }).then(x => {
     log(lbl)
 
     const res: ISVGOptimized = {

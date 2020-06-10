@@ -100,6 +100,10 @@ declare module 'svgo/plugins/moveGroupAttrsToElems' {
   const e: SVGO.Plugin
   export = e
 }
+declare module 'svgo/plugins/prefixIds' {
+  const e: SVGO.Plugin
+  export = e
+}
 declare module 'svgo/plugins/removeComments' {
   const e: SVGO.Plugin
   export = e

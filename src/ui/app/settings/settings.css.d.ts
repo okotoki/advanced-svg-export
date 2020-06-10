@@ -1,18 +1,18 @@
 declare const styles: {
+  readonly "animation": string;
+  readonly "buttons": string;
+  readonly "close": string;
   readonly "container": string;
-  readonly "contentWrapper": string;
   readonly "content": string;
   readonly "contentHeader": string;
-  readonly "learnMore": string;
+  readonly "contentWrapper": string;
+  readonly "footer": string;
   readonly "item": string;
   readonly "label": string;
-  readonly "buttons": string;
+  readonly "learnMore": string;
   readonly "left": string;
-  readonly "close": string;
-  readonly "animation": string;
-  readonly "savedAnimate": string;
   readonly "saved": string;
-  readonly "footer": string;
+  readonly "savedAnimate": string;
   readonly "totalSaved": string;
 };
 export = styles;
