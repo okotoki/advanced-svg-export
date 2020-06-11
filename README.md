@@ -1,14 +1,8 @@
+ # <img src="media/header.svg" width="800" align="center" alt="Advanced SVG Export"/>
 
-# Yet another Figma plugin starter
+Ever used a third-party tool to optimize SVG, exported from Figma?
+Well, now you don't have to – Advanced SVG Export lets you optimize SVG before exporting.
 
-<img src="logos.svg">
+Customizable optimizations by using [SVGO](https://github.com/svg/svgo) under the hood.
 
-### TypeScript
-The best JavaScript to date.
-
-### React
-Renders stuff, so you don't have to.
-
-### Webpack
-Bundles it all together.
-
+2020 © Okotoki Software
