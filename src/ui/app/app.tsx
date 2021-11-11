@@ -1,10 +1,8 @@
-import 'shared/debug'
-
 import * as debug from 'debug'
 import * as React from 'react'
+import 'shared/debug'
 import { createMessenger } from 'shared/messenger'
 import { PluginsSettings } from 'shared/settings'
-
 import styles from './app.css'
 import { TextButton } from './components/button'
 import { Layout } from './components/layout'
@@ -15,13 +13,11 @@ import { initialState, reducer } from './state'
 import { serializedToProgress } from './svgo'
 import SVGOWorker from './svgo/svgo.worker'
 import { ISVGOptimized, ISVGProgress } from './svgo/types'
-import { createTracker } from './tracker/tracker'
 import { cls, getSize, saveAsZip } from './util'
 
 const log = debug('[SVGO] App')
 
 const messenger = createMessenger('iframe')
-const tracker = createTracker()
 const svgoWorker = new SVGOWorker(undefined as any)
 
 const sendToWorker = (
@@ -88,9 +84,6 @@ export const App = () => {
           type: 'INITIALIZE',
           data: { ...msg, svgs, initialized: true }
         })
-
-        tracker.init(msg.version, msg.userId)
-        tracker.started()
       },
       selectionChanged: els => {
         const svgs = serializedToProgress(els)
@@ -119,7 +112,6 @@ export const App = () => {
   const closeSettings = () => setShowSettings(false)
   const openSettings = () => {
     setShowSettings(true)
-    tracker.settingsOpened()
   }
 
   const onSettingsChanged = (
@@ -146,7 +138,6 @@ export const App = () => {
     if (!keepOpen) {
       closeSettings()
     }
-    tracker.settingsChanged(settings, defaultsRestored)
   }
 
   /*
@@ -163,7 +154,6 @@ export const App = () => {
 
   const onExportOne = (sizeDiff: number) => {
     incTotalValue(sizeDiff)
-    tracker.exportInitiated()
   }
 
   const onExportAll = () => {
@@ -177,7 +167,6 @@ export const App = () => {
 
     incTotalValue(sizeDiff)
     saveAsZip(state.svgs as ISVGOptimized[])
-    tracker.exportInitiated(true)
   }
 
   const optimizingFinished = !state.svgs.find(x => !x.isDone)

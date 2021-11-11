@@ -15,6 +15,7 @@ export const defaultPluginsSettings = {
   removeEditorsNSData: true,
   cleanupAttrs: true,
   inlineStyles: true,
+  mergeStyles: true,
   minifyStyles: true,
   convertStyleToAttrs: true,
   cleanupIDs: true,
@@ -60,13 +61,11 @@ export const defaultPluginsSettings = {
 }
 
 export type PluginsConfiguration = {
-  [key in keyof PluginsSettings]: {
-    active: boolean
-    params?: {
-      [k: string]: any
-    }
+  name: keyof PluginsSettings
+  params?: {
+    [k: string]: any
   }
-}
+}[]
 
 export function getPluginsConfiguration(
   settings: PluginsSettings,
@@ -74,18 +73,26 @@ export function getPluginsConfiguration(
 ): PluginsConfiguration {
   return Object.keys(settings).reduce((config, key) => {
     const k = key as keyof PluginsSettings
-    config[k] = { active: settings[k] }
+    const active = settings[k]
+    if (!active) return config
 
+    let p: {} | undefined
     if (k === 'prefixIds') {
-      config[k].params = {
+      p = {
         prefix
       }
     } else if (k === 'removeAttrs') {
-      config[k].params = {
+      p = {
         attrs: '*:(fill|stroke):none'
       }
     }
 
+    if (!!p) {
+      config.push({ name: k, params: p })
+    } else {
+      config.push({ name: k })
+    }
+
     return config
-  }, {} as PluginsConfiguration)
+  }, [] as PluginsConfiguration)
 }

@@ -1,6 +1,5 @@
 import * as debug from 'debug'
 import { isUndefined } from 'util'
-
 import { PluginsSettings } from './settings'
 import { IGlobalSettings, ISerializedSVG } from './types'
 import { isObject } from './utils'
