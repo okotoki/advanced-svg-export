@@ -1,76 +1,11 @@
 import { PluginsConfiguration } from 'shared/settings'
 import { ISerializedSVG } from 'shared/types'
-import js2svg from 'svgo/lib/svgo/js2svg'
-import SVGOplugins from 'svgo/lib/svgo/plugins'
-import svg2js from 'svgo/lib/svgo/svg2js'
-
+import { optimize as svgoOptimize } from 'svgo/dist/svgo.browser'
 import { uIntToString } from '../util'
-import { pluginsByType } from './plugins'
 import { ISVGProgress } from './types'
 
-const js2svgConfig = {
-  indent: '  ',
-  pretty: true
-}
-
-interface ISVGJS {
-  data: string
-  info: { width: number; height: number }
-  error?: any
-}
-
-export function optimizeOnce(
-  svgstr: string,
-  multipassCount: number,
-  settings: PluginsConfiguration,
-  callback: (x: ISVGJS) => void
-) {
-  svg2js(svgstr, svgjs => {
-    if (svgjs.error) {
-      callback(svgjs)
-      return
-    }
-
-    svgjs = SVGOplugins(
-      svgjs,
-      { multipassCount, input: 'string' },
-      pluginsByType(settings)
-    )
-
-    callback(js2svg(svgjs, js2svgConfig))
-  })
-}
-
-interface IConfig {
-  multipass?: boolean
-}
-
-export function optimize(
-  svgstr: string,
-  settings: PluginsConfiguration,
-  config: IConfig = {}
-) {
-  return new Promise<ISVGJS>((resolve, reject) => {
-    const maxPassCount = config.multipass ? 10 : 1
-    let counter = 0
-    let prevSize = Number.POSITIVE_INFINITY
-
-    const cb = (svgjs: ISVGJS) => {
-      if (svgjs.error) {
-        reject(svgjs.error)
-        return
-      }
-
-      if (++counter < maxPassCount && svgjs.data.length < prevSize) {
-        prevSize = svgjs.data.length
-        optimizeOnce(svgjs.data, counter, settings, cb)
-      } else {
-        resolve(svgjs)
-      }
-    }
-
-    optimizeOnce(svgstr, counter, settings, cb)
-  })
+export function optimize(svgstr: string, settings: PluginsConfiguration): any {
+  return svgoOptimize(svgstr, { plugins: settings, multipass: true })
 }
 
 export const serializedToProgress = (svgs: ISerializedSVG[]): ISVGProgress[] =>

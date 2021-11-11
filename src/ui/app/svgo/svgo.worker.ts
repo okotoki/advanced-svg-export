@@ -1,8 +1,6 @@
-import 'shared/debug'
-
 import * as debug from 'debug'
+import 'shared/debug'
 import { getPluginsConfiguration, PluginsSettings } from 'shared/settings'
-
 import { optimize } from '.'
 import { ISVGOptimized, ISVGProgress } from './types'
 
@@ -20,20 +18,17 @@ ctx.addEventListener('message', event => {
   log(lbl)
 
   const config = getPluginsConfiguration(settings, svg.name)
+  const optimizedSVG = optimize(svg.svgOriginal, config)
 
-  optimize(svg.svgOriginal, config, { multipass: true }).then(x => {
-    log(lbl)
-
-    const res: ISVGOptimized = {
-      ...svg,
-      isDone: true,
-      svgOptimized: x.data,
-      width: x.info.width,
-      exportName: svg.name.substr(0, 40),
-      height: x.info.height
-    }
-    ctx.postMessage(res)
-  })
+  const res: ISVGOptimized = {
+    ...svg,
+    isDone: true,
+    svgOptimized: optimizedSVG.data,
+    width: optimizedSVG.info.width,
+    exportName: svg.name.substr(0, 40),
+    height: optimizedSVG.info.height
+  }
+  ctx.postMessage(res)
 })
 
 export default (null as any) as typeof Worker
